@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Updated color palette for meal delivery ecommerce with warm, appetizing colors */
+    --background: 0 0% 100%;
+    --foreground: 215 25% 27%;
+
+    --card: 54 91% 95%;
+    --card-foreground: 45 93% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+
+    --primary: 45 93% 20%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 330 81% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 54 91% 95%;
+    --muted-foreground: 215 25% 27%;
+
+    --accent: 330 81% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 348 83% 47%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 14% 34%;
+    --input: 220 13% 91%;
+    --ring: 45 93% 20%;
+
+    --sidebar: 54 91% 95%;
+    --sidebar-foreground: 215 25% 27%;
+    --sidebar-primary: 45 93% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 330 81% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 14% 34%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
