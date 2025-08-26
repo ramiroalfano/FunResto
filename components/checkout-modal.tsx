@@ -6,17 +6,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CreditCard, Lock, Calendar, User, GraduationCap } from "lucide-react"
+import { Lock, Calendar, User, GraduationCap, ExternalLink } from "lucide-react"
 
 interface CheckoutModalProps {
   isOpen: boolean
-  onClose: (orderData?: { childName: string; course: string }) => void // Modified onClose to accept order data
+  onClose: (orderData?: { childName: string; course: string }) => void
   selectedDays: string[]
   total: number
 }
 
 export function CheckoutModal({ isOpen, onClose, selectedDays, total }: CheckoutModalProps) {
   const [step, setStep] = useState(1)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -24,10 +25,6 @@ export function CheckoutModal({ isOpen, onClose, selectedDays, total }: Checkout
     address: "",
     childName: "",
     course: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardName: "",
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -35,40 +32,73 @@ export function CheckoutModal({ isOpen, onClose, selectedDays, total }: Checkout
   }
 
   const handleNextStep = () => {
-    if (step < 3) setStep(step + 1)
+    if (step < 2) setStep(step + 1)
   }
 
   const handlePrevStep = () => {
     if (step > 1) setStep(step - 1)
   }
 
-  const handlePayment = () => {
-    // Simular procesamiento de pago
-    setTimeout(() => {
-      setStep(4)
-    }, 2000)
-  }
+  const handleMercadoPagoRedirect = async () => {
+    setIsProcessing(true)
 
-  const handleOrderComplete = () => {
-    const orderData = {
-      childName: formData.childName,
-      course: formData.course,
+    try {
+      const preferenceData = {
+        items: [
+          {
+            title: `Viandas para ${formData.childName} - ${formData.course}`,
+            description: `Viandas para ${selectedDays.length} días (${selectedDays.join(", ")})`,
+            quantity: 1,
+            unit_price: total,
+          },
+        ],
+        payer: {
+          name: formData.name,
+          email: formData.email,
+          phone: {
+            number: formData.phone,
+          },
+          address: {
+            street_name: formData.address,
+          },
+        },
+        back_urls: {
+          success: `${window.location.origin}/payment/success`,
+          failure: `${window.location.origin}/payment/failure`,
+          pending: `${window.location.origin}/payment/pending`,
+        },
+        auto_return: "approved",
+        external_reference: `viandas-${Date.now()}`,
+        metadata: {
+          child_name: formData.childName,
+          course: formData.course,
+          selected_days: selectedDays.join(","),
+        },
+      }
+
+      const response = await fetch("/api/mercadopago/preference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(preferenceData),
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.init_point) {
+        // Redirigir al checkout de Mercado Pago
+        window.location.href = result.init_point
+      } else {
+        console.error("Error creating preference:", result.error)
+        alert(`Error al crear la preferencia de pago: ${result.error}`)
+      }
+    } catch (error) {
+      console.error("Error processing payment:", error)
+      alert("Error al procesar el pago. Por favor, intenta nuevamente.")
+    } finally {
+      setIsProcessing(false)
     }
-    // Reset form and step
-    setStep(1)
-    setFormData({
-      email: "",
-      phone: "",
-      name: "",
-      address: "",
-      childName: "",
-      course: "",
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
-      cardName: "",
-    })
-    onClose(orderData) // Pass order data to parent component
   }
 
   const handleClose = () => {
@@ -80,10 +110,6 @@ export function CheckoutModal({ isOpen, onClose, selectedDays, total }: Checkout
       address: "",
       childName: "",
       course: "",
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
-      cardName: "",
     })
     onClose()
   }
@@ -209,105 +235,49 @@ export function CheckoutModal({ isOpen, onClose, selectedDays, total }: Checkout
                   {selectedDays.map((day, index) => (
                     <div key={index} className="flex justify-between items-center">
                       <span className="text-sm">{day}</span>
-                      <span className="text-sm font-medium">$15.99</span>
+                      <span className="text-sm font-medium">${(total / selectedDays.length).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
                 <div className="border-t mt-3 pt-3 flex justify-between font-bold">
                   <span>Total:</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${total.toLocaleString()}</span>
                 </div>
               </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <img
+                    src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.21.22/mercadopago/logo__large.png"
+                    alt="Mercado Pago"
+                    className="h-6"
+                  />
+                  <span className="text-sm font-medium">Pago Seguro</span>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Serás redirigido al sitio oficial de Mercado Pago para completar tu pago de forma segura.
+                </p>
+              </div>
+
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handlePrevStep} className="flex-1 bg-transparent">
                   Atrás
                 </Button>
-                <Button onClick={handleNextStep} className="flex-1 bg-orange-600 hover:bg-orange-700">
-                  Continuar al Pago
+                <Button
+                  onClick={handleMercadoPagoRedirect}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    "Redirigiendo..."
+                  ) : (
+                    <>
+                      Pagar con Mercado Pago
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </>
+                  )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {step === 3 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Información de Pago
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="cardName">Nombre en la Tarjeta</Label>
-                <Input
-                  id="cardName"
-                  value={formData.cardName}
-                  onChange={(e) => handleInputChange("cardName", e.target.value)}
-                  placeholder="Como aparece en la tarjeta"
-                />
-              </div>
-              <div>
-                <Label htmlFor="cardNumber">Número de Tarjeta</Label>
-                <Input
-                  id="cardNumber"
-                  value={formData.cardNumber}
-                  onChange={(e) => handleInputChange("cardNumber", e.target.value)}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="expiryDate">Fecha de Vencimiento</Label>
-                  <Input
-                    id="expiryDate"
-                    value={formData.expiryDate}
-                    onChange={(e) => handleInputChange("expiryDate", e.target.value)}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    id="cvv"
-                    value={formData.cvv}
-                    onChange={(e) => handleInputChange("cvv", e.target.value)}
-                    placeholder="123"
-                    maxLength={4}
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handlePrevStep} className="flex-1 bg-transparent">
-                  Atrás
-                </Button>
-                <Button onClick={handlePayment} className="flex-1 bg-green-600 hover:bg-green-700">
-                  Pagar ${total.toFixed(2)}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {step === 4 && (
-          <Card>
-            <CardContent className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-green-600 mb-2">¡Pago Exitoso!</h3>
-              <p className="text-gray-600 mb-4">Tu orden ha sido confirmada. Recibirás un email con los detalles.</p>
-              <p className="text-sm text-gray-500 mb-6">
-                Número de orden: #VD{Math.random().toString(36).substr(2, 9).toUpperCase()}
-              </p>
-              <Button onClick={handleOrderComplete} className="w-full bg-orange-600 hover:bg-orange-700">
-                Continuar
-              </Button>
             </CardContent>
           </Card>
         )}

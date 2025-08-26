@@ -21,6 +21,7 @@ interface Order {
 
 export default function MealDeliveryPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [activeSection, setActiveSection] = useState("viandas")
@@ -48,6 +49,14 @@ export default function MealDeliveryPage() {
 
   const closeSidebar = () => {
     setIsSidebarOpen(false)
+  }
+
+  const toggleCart = () => {
+    setIsCartOpen(!isCartOpen)
+  }
+
+  const closeCart = () => {
+    setIsCartOpen(false)
   }
 
   const handleDaySelection = (days: string[]) => {
@@ -110,12 +119,29 @@ export default function MealDeliveryPage() {
       {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={toggleSidebar} />}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onMenuToggle={toggleSidebar} />
+        <Header
+          onMenuToggle={toggleSidebar}
+          onCartToggle={activeSection === "viandas" ? toggleCart : undefined}
+          selectedDaysCount={selectedDays.length}
+        />
         <div className="flex-1 flex overflow-hidden">
           <main className="flex-1 overflow-auto p-6">{renderMainContent()}</main>
-          {activeSection === "viandas" && <Cart selectedDays={selectedDays} onCheckout={handleCheckout} />}
+          {activeSection === "viandas" && (
+            <>
+              <div className="hidden md:block">
+                <Cart selectedDays={selectedDays} onCheckout={handleCheckout} />
+              </div>
+              <div
+                className={`${isCartOpen ? "translate-x-0" : "translate-x-full"} md:hidden transition-transform duration-300 ease-in-out fixed right-0 top-0 z-30 h-full w-80 bg-card shadow-lg`}
+              >
+                <Cart selectedDays={selectedDays} onCheckout={handleCheckout} onClose={closeCart} />
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {isCartOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={toggleCart} />}
 
       <CheckoutModal isOpen={isCheckoutOpen} onClose={handleCloseCheckout} selectedDays={selectedDays} total={total} />
     </div>

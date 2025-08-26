@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { CreditCard, QrCode, Banknote, Edit2, Calendar } from "lucide-react"
+import { CreditCard, Edit2, Calendar, X } from "lucide-react"
 
 const cartItems = [
   { title: "Original Chess Meat Burger With Chips (Non Veg)", price: 23.99, quantity: 1 },
@@ -10,7 +10,15 @@ const cartItems = [
   { title: "Tacos Salsa With Chickens Grilled", price: 14.99, quantity: 1 },
 ]
 
-export function Cart({ selectedDays = [], onCheckout }: { selectedDays?: string[]; onCheckout?: () => void }) {
+export function Cart({
+  selectedDays = [],
+  onCheckout,
+  onClose,
+}: {
+  selectedDays?: string[]
+  onCheckout?: () => void
+  onClose?: () => void
+}) {
   const getPricePerDay = (totalDays: number) => {
     if (totalDays >= 1 && totalDays <= 3) {
       return 6000
@@ -34,9 +42,16 @@ export function Cart({ selectedDays = [], onCheckout }: { selectedDays?: string[
           <h2 className="text-xl font-bold">{selectedDays.length > 0 ? "Tu Orden" : "Table 4"}</h2>
           <p className="text-sm text-gray-500">{selectedDays.length > 0 ? "Viandas Seleccionadas" : "Floyd Miles"}</p>
         </div>
-        <Button variant="ghost" size="icon">
-          <Edit2 className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon">
+            <Edit2 className="h-5 w-5" />
+          </Button>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {selectedDays.length === 0 && (
@@ -87,23 +102,17 @@ export function Cart({ selectedDays = [], onCheckout }: { selectedDays?: string[
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <Button variant="outline" className="flex flex-col items-center py-2 bg-transparent">
-              <Banknote className="h-5 w-5 mb-1" />
-              <span className="text-xs">Efectivo</span>
-            </Button>
-            <Button variant="outline" className="flex flex-col items-center py-2 bg-transparent">
-              <CreditCard className="h-5 w-5 mb-1" />
-              <span className="text-xs">Tarjeta</span>
-            </Button>
-            <Button variant="outline" className="flex flex-col items-center py-2 bg-transparent">
-              <QrCode className="h-5 w-5 mb-1" />
-              <span className="text-xs">QR Code</span>
-            </Button>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CreditCard className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">Pago Seguro</span>
+            </div>
+            <p className="text-xs text-blue-600">Procesado por Mercado Pago - Tarjetas de crédito y débito</p>
           </div>
 
-          <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white h-12" onClick={onCheckout}>
-            Proceder al Pago
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold" onClick={onCheckout}>
+            <CreditCard className="h-5 w-5 mr-2" />
+            Pagar con Mercado Pago
           </Button>
         </div>
       )}
