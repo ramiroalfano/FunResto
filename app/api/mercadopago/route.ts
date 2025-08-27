@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 // Configuración de Mercado Pago
-const MERCADOPAGO_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || "TEST-your-access-token-here"
+const MERCADOPAGO_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || "APP_USR-492031530323750-051410-79c26976419b25e35f31e1dc2ee2447f-134607486"
 
 export async function POST(request: NextRequest) {
   try {
