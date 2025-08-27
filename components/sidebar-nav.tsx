@@ -1,11 +1,10 @@
 "use client"
 
-import { UtensilsCrossed, Calendar, ShoppingBag, Heart, Phone, LogOut, X, Shield } from "lucide-react"
+import { UtensilsCrossed, ShoppingBag, Heart, Phone, X, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navItems = [
   { icon: UtensilsCrossed, label: "Viandas", color: "text-sidebar-foreground" },
-  { icon: Calendar, label: "Mi Planificación", color: "text-sidebar-foreground" },
   { icon: ShoppingBag, label: "Mis Pedidos", color: "text-sidebar-foreground" },
   { icon: Heart, label: "Favoritos", color: "text-sidebar-foreground" },
   { icon: Shield, label: "Admin", color: "text-sidebar-foreground" },
@@ -55,11 +54,6 @@ export function SidebarNav({ onClose, activeSection = "viandas", onSectionChange
           </Button>
         ))}
       </nav>
-
-      <Button variant="ghost" className="w-full justify-start mt-auto text-sidebar-foreground absolute bottom-4">
-        <LogOut className="mr-2 h-4 w-4" />
-        Cerrar Sesión
-      </Button>
     </div>
   )
 }

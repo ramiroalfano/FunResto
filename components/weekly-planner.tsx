@@ -24,9 +24,10 @@ const months = [
 interface WeeklyPlannerProps {
   selectedDays?: string[]
   onDaySelection?: (days: string[]) => void
+  onOpenCart?: () => void
 }
 
-export function WeeklyPlanner({ selectedDays = [], onDaySelection }: WeeklyPlannerProps) {
+export function WeeklyPlanner({ selectedDays = [], onDaySelection, onOpenCart }: WeeklyPlannerProps) {
   const [currentWeek, setCurrentWeek] = useState(0)
   const selectedDaysSet = new Set(selectedDays)
 
@@ -52,7 +53,7 @@ export function WeeklyPlanner({ selectedDays = [], onDaySelection }: WeeklyPlann
 
   const handleBuyDays = () => {
     if (selectedDays.length > 0) {
-      onDaySelection?.(selectedDays)
+      onOpenCart?.()
     }
   }
 

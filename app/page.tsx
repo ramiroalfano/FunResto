@@ -10,6 +10,7 @@ import { CheckoutModal } from "../components/checkout-modal"
 import { MyOrders } from "../components/my-orders"
 import { MyAccount } from "../components/my-account"
 import { AdminOrders } from "../components/admin-orders"
+import { AdminLogin } from "../components/admin-login"
 import { WhatsAppFloat } from "../components/whatsapp-float"
 
 interface Order {
@@ -35,6 +36,7 @@ export default function MealDeliveryPage() {
   const [paymentMethod, setPaymentMethod] = useState<"mercadopago" | "cash">("mercadopago")
   const [activeSection, setActiveSection] = useState("viandas")
   const [orders, setOrders] = useState<Order[]>([])
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
 
   const getPricePerDay = (totalDays: number) => {
     if (totalDays >= 1 && totalDays <= 3) {
@@ -48,9 +50,7 @@ export default function MealDeliveryPage() {
   }
 
   const pricePerDay = getPricePerDay(selectedDays.length)
-  const subtotal = selectedDays.length * pricePerDay
-  const tax = subtotal * 0.05
-  const total = subtotal + tax
+  const total = selectedDays.length * pricePerDay
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
@@ -85,9 +85,7 @@ export default function MealDeliveryPage() {
   const handleCloseCheckout = (orderData?: { childName: string; course: string; paymentMethod: string }) => {
     if (orderData && selectedDays.length > 0) {
       const checkoutPricePerDay = getPricePerDay(selectedDays.length)
-      const checkoutSubtotal = selectedDays.length * checkoutPricePerDay
-      const checkoutTax = checkoutSubtotal * 0.05
-      const checkoutTotal = checkoutSubtotal + checkoutTax
+      const checkoutTotal = selectedDays.length * checkoutPricePerDay
 
       const newOrder: Order = {
         id: `ORD-${Date.now()}`,
@@ -123,6 +121,10 @@ export default function MealDeliveryPage() {
     setIsSidebarOpen(false)
   }
 
+  const handleAdminLogin = () => {
+    setIsAdminAuthenticated(true)
+  }
+
   const renderMainContent = () => {
     switch (activeSection) {
       case "mis-pedidos":
@@ -130,7 +132,7 @@ export default function MealDeliveryPage() {
       case "mi-cuenta":
         return <MyAccount />
       case "admin":
-        return <AdminOrders orders={orders} />
+        return isAdminAuthenticated ? <AdminOrders orders={orders} /> : <AdminLogin onLogin={handleAdminLogin} />
       case "contacto":
         return (
           <div className="max-w-2xl mx-auto">
@@ -154,7 +156,7 @@ export default function MealDeliveryPage() {
       default:
         return (
           <>
-            <WeeklyPlanner selectedDays={selectedDays} onDaySelection={handleDaySelection} />
+            <WeeklyPlanner selectedDays={selectedDays} onDaySelection={handleDaySelection} onOpenCart={toggleCart} />
             <MealGrid />
           </>
         )
@@ -183,11 +185,8 @@ export default function MealDeliveryPage() {
           <main className="flex-1 overflow-auto p-6">{renderMainContent()}</main>
           {activeSection === "viandas" && (
             <>
-              <div className="hidden md:block">
-                <Cart selectedDays={selectedDays} onCheckout={handleCheckout} onCashPayment={handleCashPayment} />
-              </div>
               <div
-                className={`${isCartOpen ? "translate-x-0" : "translate-x-full"} md:hidden transition-transform duration-300 ease-in-out fixed right-0 top-0 z-30 h-full w-80 bg-card shadow-lg`}
+                className={`${isCartOpen ? "translate-x-0" : "translate-x-full"} transition-transform duration-300 ease-in-out fixed right-0 top-0 z-30 h-full w-80 bg-card shadow-lg`}
               >
                 <Cart
                   selectedDays={selectedDays}

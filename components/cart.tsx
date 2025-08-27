@@ -33,26 +33,24 @@ export function Cart({
   }
 
   const pricePerDay = getPricePerDay(selectedDays.length)
-  const subtotal = selectedDays.length * pricePerDay
-  const tax = subtotal * 0.05
-  const total = subtotal + tax
+  const total = selectedDays.length * pricePerDay
 
   return (
-    <div className="w-[380px] bg-white border-l flex flex-col h-full">
-      <div className="p-4 border-b flex justify-between items-center">
+    <div className="w-[420px] bg-white border-l flex flex-col max-h-[calc(100vh-2rem)] shadow-lg">
+      <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
         <div>
-          <h2 className="text-xl font-bold">{selectedDays.length > 0 ? "Tu Orden" : "Table 4"}</h2>
-          <p className="text-sm text-gray-500">{selectedDays.length > 0 ? "Viandas Seleccionadas" : "Floyd Miles"}</p>
+          <h2 className="text-xl font-bold">Tu Orden</h2>
+          <p className="text-sm text-gray-500">
+            {selectedDays.length > 0 ? "Viandas Seleccionadas" : "Selecciona días para comenzar"}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon">
             <Edit2 className="h-5 w-5" />
           </Button>
-          {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
-              <X className="h-5 w-5" />
-            </Button>
-          )}
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
         </div>
       </div>
 
@@ -66,72 +64,71 @@ export function Cart({
       )}
 
       {selectedDays.length > 0 && (
-        <div className="flex-1 overflow-auto p-4">
-          {selectedDays.map((day, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 border rounded-lg mb-2">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-orange-600" />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium">
-                  {new Date(day).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" })}
-                </h4>
-                <p className="text-xs text-gray-600">Menú del día incluido</p>
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-orange-600 font-bold">${pricePerDay.toLocaleString()}</span>
-                  <span className="text-sm text-gray-500">1 día</span>
+        <>
+          <div className="flex-1 overflow-y-auto p-4 max-h-[40vh]">
+            {selectedDays.map((day, index) => (
+              <div key={index} className="flex items-start gap-3 p-4 border rounded-lg mb-3 bg-gray-50">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Calendar className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-medium mb-1">
+                    {new Date(day).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" })}
+                  </h4>
+                  <p className="text-xs text-gray-600 mb-2">Menú del día incluido</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">1 día</span>
+                    <span className="text-orange-600 font-bold text-lg">${pricePerDay.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {selectedDays.length > 0 && (
-        <div className="border-t p-4">
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Sub Total ({selectedDays.length} días)</span>
-              <span>${subtotal.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax 5%</span>
-              <span>${tax.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between font-bold">
-              <span>Total Amount</span>
-              <span>${total.toLocaleString()}</span>
-            </div>
+            ))}
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-            <div className="flex items-center gap-2 mb-1">
-              <CreditCard className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">Pago Seguro</span>
+          <div className="border-t p-4 flex-shrink-0 bg-white">
+            <div className="space-y-3 mb-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Sub Total ({selectedDays.length} días)</span>
+                <span className="font-medium">${total.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg border-t pt-2">
+                <span>Total Amount</span>
+                <span className="text-orange-600">${total.toLocaleString()}</span>
+              </div>
             </div>
-            <p className="text-xs text-blue-600">Procesado por Mercado Pago - Tarjetas de crédito y débito</p>
-          </div>
 
-          <div className="space-y-3">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold" onClick={onCheckout}>
-              <CreditCard className="h-5 w-5 mr-2" />
-              Pagar con Mercado Pago
-            </Button>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <CreditCard className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">Pago Seguro</span>
+              </div>
+              <p className="text-xs text-blue-600">Procesado por Mercado Pago - Tarjetas de crédito y débito</p>
+            </div>
 
-            <Button
-              variant="outline"
-              className="w-full border-green-600 text-green-600 hover:bg-green-50 h-12 font-semibold bg-transparent"
-              onClick={onCashPayment}
-            >
-              <Banknote className="h-5 w-5 mr-2" />
-              Pagar en Efectivo
-            </Button>
-          </div>
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold"
+                onClick={onCheckout}
+              >
+                <CreditCard className="h-5 w-5 mr-2" />
+                Pagar con Mercado Pago
+              </Button>
 
-          <div className="mt-3 text-center">
-            <p className="text-xs text-gray-500">Elige tu método de pago preferido</p>
+              <Button
+                variant="outline"
+                className="w-full border-green-600 text-green-600 hover:bg-green-50 h-12 font-semibold bg-transparent"
+                onClick={onCashPayment}
+              >
+                <Banknote className="h-5 w-5 mr-2" />
+                Pagar en Efectivo
+              </Button>
+            </div>
+
+            <div className="mt-3 text-center">
+              <p className="text-xs text-gray-500">Elige tu método de pago preferido</p>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )
