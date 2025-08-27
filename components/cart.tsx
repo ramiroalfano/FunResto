@@ -36,7 +36,7 @@ export function Cart({
   const total = selectedDays.length * pricePerDay
 
   return (
-    <div className="w-[420px] bg-white border-l flex flex-col max-h-[calc(100vh-2rem)] shadow-lg">
+    <div className="w-full max-w-full sm:max-w-[420px] h-screen bg-white border-l flex flex-col shadow-lg overflow-hidden overflow-x-hidden min-w-0">
       <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
         <div>
           <h2 className="text-xl font-bold">Tu Orden</h2>
@@ -65,14 +65,14 @@ export function Cart({
 
       {selectedDays.length > 0 && (
         <>
-          <div className="flex-1 overflow-y-auto p-4 max-h-[40vh]">
+          <div className="flex-1 overflow-y-auto p-4 overflow-x-hidden">
             {selectedDays.map((day, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 border rounded-lg mb-3 bg-gray-50">
+              <div key={index} className="flex items-start gap-3 p-4 border rounded-lg mb-3 bg-gray-50 min-w-0">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Calendar className="h-6 w-6 text-orange-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium mb-1">
+                  <h4 className="text-sm font-medium mb-1 break-words">
                     {new Date(day).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" })}
                   </h4>
                   <p className="text-xs text-gray-600 mb-2">Menú del día incluido</p>
