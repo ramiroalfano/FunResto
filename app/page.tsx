@@ -9,7 +9,8 @@ import { Cart } from "../components/cart"
 import { CheckoutModal } from "../components/checkout-modal"
 import { MyOrders } from "../components/my-orders"
 import { MyAccount } from "../components/my-account"
-import { WhatsAppFloat } from "../components/whatsapp-float" // Importado componente WhatsApp
+import { AdminOrders } from "../components/admin-orders"
+import { WhatsAppFloat } from "../components/whatsapp-float"
 
 interface Order {
   id: string
@@ -19,6 +20,11 @@ interface Order {
   totalAmount: number
   date: string
   status: "completed" | "pending" | "delivered"
+  paymentMethod: "mercadopago" | "efectivo"
+  paymentStatus: "pagado" | "pendiente"
+  parentName: string
+  parentEmail: string
+  parentPhone: string
 }
 
 export default function MealDeliveryPage() {
@@ -26,6 +32,7 @@ export default function MealDeliveryPage() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<"mercadopago" | "cash">("mercadopago")
   const [activeSection, setActiveSection] = useState("viandas")
   const [orders, setOrders] = useState<Order[]>([])
 
@@ -66,10 +73,16 @@ export default function MealDeliveryPage() {
   }
 
   const handleCheckout = () => {
+    setPaymentMethod("mercadopago")
     setIsCheckoutOpen(true)
   }
 
-  const handleCloseCheckout = (orderData?: { childName: string; course: string }) => {
+  const handleCashPayment = () => {
+    setPaymentMethod("cash")
+    setIsCheckoutOpen(true)
+  }
+
+  const handleCloseCheckout = (orderData?: { childName: string; course: string; paymentMethod: string }) => {
     if (orderData && selectedDays.length > 0) {
       const checkoutPricePerDay = getPricePerDay(selectedDays.length)
       const checkoutSubtotal = selectedDays.length * checkoutPricePerDay
@@ -83,7 +96,12 @@ export default function MealDeliveryPage() {
         selectedDays: [...selectedDays],
         totalAmount: checkoutTotal,
         date: new Date().toLocaleDateString("es-ES"),
-        status: "completed",
+        status: orderData.paymentMethod === "cash" ? "pending" : "completed",
+        paymentMethod: orderData.paymentMethod === "cash" ? "efectivo" : "mercadopago",
+        paymentStatus: orderData.paymentMethod === "cash" ? "pendiente" : "pagado",
+        parentName: "Juan Pérez",
+        parentEmail: "juan.perez@email.com",
+        parentPhone: "+54 11 1234-5678",
       }
       setOrders((prev) => [newOrder, ...prev])
     }
@@ -111,7 +129,9 @@ export default function MealDeliveryPage() {
         return <MyOrders orders={orders} />
       case "mi-cuenta":
         return <MyAccount />
-      case "contacto": // Agregado caso para contacto
+      case "admin":
+        return <AdminOrders orders={orders} />
+      case "contacto":
         return (
           <div className="max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold text-foreground mb-6">Contacto</h1>
@@ -156,20 +176,25 @@ export default function MealDeliveryPage() {
           onMenuToggle={toggleSidebar}
           onCartToggle={activeSection === "viandas" ? toggleCart : undefined}
           selectedDaysCount={selectedDays.length}
-          onAccountClick={handleAccountClick} // Conectado botón Mi Cuenta
-          onContactClick={handleContactClick} // Conectado botón Contacto
+          onAccountClick={handleAccountClick}
+          onContactClick={handleContactClick}
         />
         <div className="flex-1 flex overflow-hidden">
           <main className="flex-1 overflow-auto p-6">{renderMainContent()}</main>
           {activeSection === "viandas" && (
             <>
               <div className="hidden md:block">
-                <Cart selectedDays={selectedDays} onCheckout={handleCheckout} />
+                <Cart selectedDays={selectedDays} onCheckout={handleCheckout} onCashPayment={handleCashPayment} />
               </div>
               <div
                 className={`${isCartOpen ? "translate-x-0" : "translate-x-full"} md:hidden transition-transform duration-300 ease-in-out fixed right-0 top-0 z-30 h-full w-80 bg-card shadow-lg`}
               >
-                <Cart selectedDays={selectedDays} onCheckout={handleCheckout} onClose={closeCart} />
+                <Cart
+                  selectedDays={selectedDays}
+                  onCheckout={handleCheckout}
+                  onCashPayment={handleCashPayment}
+                  onClose={closeCart}
+                />
               </div>
             </>
           )}
@@ -178,7 +203,13 @@ export default function MealDeliveryPage() {
 
       {isCartOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={toggleCart} />}
 
-      <CheckoutModal isOpen={isCheckoutOpen} onClose={handleCloseCheckout} selectedDays={selectedDays} total={total} />
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={handleCloseCheckout}
+        selectedDays={selectedDays}
+        total={total}
+        paymentMethod={paymentMethod}
+      />
 
       <WhatsAppFloat />
     </div>

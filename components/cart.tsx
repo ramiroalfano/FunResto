@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { CreditCard, Edit2, Calendar, X } from "lucide-react"
+import { CreditCard, Edit2, Calendar, X, Banknote } from "lucide-react"
 
 const cartItems = [
   { title: "Original Chess Meat Burger With Chips (Non Veg)", price: 23.99, quantity: 1 },
@@ -13,10 +13,12 @@ const cartItems = [
 export function Cart({
   selectedDays = [],
   onCheckout,
+  onCashPayment,
   onClose,
 }: {
   selectedDays?: string[]
   onCheckout?: () => void
+  onCashPayment?: () => void
   onClose?: () => void
 }) {
   const getPricePerDay = (totalDays: number) => {
@@ -110,10 +112,25 @@ export function Cart({
             <p className="text-xs text-blue-600">Procesado por Mercado Pago - Tarjetas de crédito y débito</p>
           </div>
 
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold" onClick={onCheckout}>
-            <CreditCard className="h-5 w-5 mr-2" />
-            Pagar con Mercado Pago
-          </Button>
+          <div className="space-y-3">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold" onClick={onCheckout}>
+              <CreditCard className="h-5 w-5 mr-2" />
+              Pagar con Mercado Pago
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full border-green-600 text-green-600 hover:bg-green-50 h-12 font-semibold bg-transparent"
+              onClick={onCashPayment}
+            >
+              <Banknote className="h-5 w-5 mr-2" />
+              Pagar en Efectivo
+            </Button>
+          </div>
+
+          <div className="mt-3 text-center">
+            <p className="text-xs text-gray-500">Elige tu método de pago preferido</p>
+          </div>
         </div>
       )}
     </div>
