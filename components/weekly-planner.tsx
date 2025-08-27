@@ -115,7 +115,7 @@ export function WeeklyPlanner({ selectedDays = [], onDaySelection, onOpenCart }:
                     ? "bg-primary text-primary-foreground"
                     : isToday
                       ? "border-primary text-primary"
-                      : "border-border text-card-foreground hover:bg-muted"
+                      : "border-border text-card-foreground hover:bg-orange-100 hover:border-orange-300"
                 }`}
                 onClick={() => toggleDay(dateString)}
               >

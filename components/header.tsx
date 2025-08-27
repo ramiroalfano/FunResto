@@ -1,7 +1,6 @@
 "use client"
 
-import { Search, Menu, User, ShoppingCart, Phone } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Menu, User, ShoppingCart, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface HeaderProps {
@@ -25,10 +24,7 @@ export function Header({
         <Menu className="h-5 w-5" />
       </Button>
 
-      <div className="flex-1 relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-        <Input type="text" placeholder="Buscar viandas, ingredientes..." className="pl-10 w-full bg-input" />
-      </div>
+      <div className="flex-1"></div>
 
       <div className="flex items-center gap-4">
         {onCartToggle && (
