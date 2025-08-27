@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Menu, User, ShoppingCart } from "lucide-react"
+import { Search, Menu, User, ShoppingCart, Phone } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -8,9 +8,17 @@ interface HeaderProps {
   onMenuToggle: () => void
   onCartToggle?: () => void
   selectedDaysCount?: number
+  onAccountClick?: () => void
+  onContactClick?: () => void
 }
 
-export function Header({ onMenuToggle, onCartToggle, selectedDaysCount = 0 }: HeaderProps) {
+export function Header({
+  onMenuToggle,
+  onCartToggle,
+  selectedDaysCount = 0,
+  onAccountClick,
+  onContactClick,
+}: HeaderProps) {
   return (
     <div className="bg-card p-4 flex items-center gap-4 border-b border-border">
       <Button variant="ghost" size="icon" onClick={onMenuToggle} className="md:hidden">
@@ -34,10 +42,15 @@ export function Header({ onMenuToggle, onCartToggle, selectedDaysCount = 0 }: He
           </Button>
         )}
 
-        <div className="flex items-center gap-2">
+        <Button variant="ghost" onClick={onContactClick} className="flex items-center gap-2 hover:bg-accent">
+          <Phone className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium text-foreground hidden sm:inline">Contacto</span>
+        </Button>
+
+        <Button variant="ghost" onClick={onAccountClick} className="flex items-center gap-2 hover:bg-accent">
           <User className="h-5 w-5 text-muted-foreground" />
           <span className="font-semibold text-foreground">Mi Cuenta</span>
-        </div>
+        </Button>
       </div>
     </div>
   )
