@@ -8,6 +8,8 @@ import { MealGrid } from "../components/meal-grid"
 import { Cart } from "../components/cart"
 import { CheckoutModal } from "../components/checkout-modal"
 import { MyOrders } from "../components/my-orders"
+import { MyAccount } from "../components/my-account"
+import { WhatsAppFloat } from "../components/whatsapp-float" // Importado componente WhatsApp
 
 interface Order {
   id: string
@@ -93,10 +95,41 @@ export default function MealDeliveryPage() {
     setActiveSection(section)
   }
 
+  const handleAccountClick = () => {
+    setActiveSection("mi-cuenta")
+    setIsSidebarOpen(false)
+  }
+
+  const handleContactClick = () => {
+    setActiveSection("contacto")
+    setIsSidebarOpen(false)
+  }
+
   const renderMainContent = () => {
     switch (activeSection) {
       case "mis-pedidos":
         return <MyOrders orders={orders} />
+      case "mi-cuenta":
+        return <MyAccount />
+      case "contacto": // Agregado caso para contacto
+        return (
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-3xl font-bold text-foreground mb-6">Contacto</h1>
+            <div className="bg-card p-6 rounded-lg border border-border space-y-4">
+              <div>
+                <h3 className="font-semibold text-foreground mb-2">Información de Contacto</h3>
+                <p className="text-muted-foreground">📞 Teléfono: +54 11 2345-6789</p>
+                <p className="text-muted-foreground">📧 Email: info@viandasexpress.com</p>
+                <p className="text-muted-foreground">📍 Dirección: Av. Corrientes 1234, CABA</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-2">Horarios de Atención</h3>
+                <p className="text-muted-foreground">Lunes a Viernes: 8:00 - 18:00</p>
+                <p className="text-muted-foreground">Sábados: 9:00 - 14:00</p>
+              </div>
+            </div>
+          </div>
+        )
       case "viandas":
       default:
         return (
@@ -123,6 +156,8 @@ export default function MealDeliveryPage() {
           onMenuToggle={toggleSidebar}
           onCartToggle={activeSection === "viandas" ? toggleCart : undefined}
           selectedDaysCount={selectedDays.length}
+          onAccountClick={handleAccountClick} // Conectado botón Mi Cuenta
+          onContactClick={handleContactClick} // Conectado botón Contacto
         />
         <div className="flex-1 flex overflow-hidden">
           <main className="flex-1 overflow-auto p-6">{renderMainContent()}</main>
@@ -144,6 +179,8 @@ export default function MealDeliveryPage() {
       {isCartOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={toggleCart} />}
 
       <CheckoutModal isOpen={isCheckoutOpen} onClose={handleCloseCheckout} selectedDays={selectedDays} total={total} />
+
+      <WhatsAppFloat />
     </div>
   )
 }

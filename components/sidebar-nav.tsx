@@ -1,14 +1,14 @@
 "use client"
 
-import { UtensilsCrossed, Calendar, ShoppingBag, Heart, Settings, LogOut, X } from "lucide-react"
+import { UtensilsCrossed, Calendar, ShoppingBag, Heart, Phone, LogOut, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navItems = [
-  { icon: UtensilsCrossed, label: "Viandas", color: "text-primary", active: true },
+  { icon: UtensilsCrossed, label: "Viandas", color: "text-sidebar-foreground" },
   { icon: Calendar, label: "Mi Planificación", color: "text-sidebar-foreground" },
   { icon: ShoppingBag, label: "Mis Pedidos", color: "text-sidebar-foreground" },
   { icon: Heart, label: "Favoritos", color: "text-sidebar-foreground" },
-  { icon: Settings, label: "Configuración", color: "text-sidebar-foreground" },
+  { icon: Phone, label: "Contacto", color: "text-sidebar-foreground" },
 ]
 
 interface SidebarNavProps {
