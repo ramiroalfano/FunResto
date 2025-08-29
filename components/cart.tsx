@@ -14,11 +14,13 @@ export function Cart({
   selectedDays = [],
   onCheckout,
   onCashPayment,
+  onTransferPayment,
   onClose,
 }: {
   selectedDays?: string[]
   onCheckout?: () => void
   onCashPayment?: () => void
+  onTransferPayment?: () => void
   onClose?: () => void
 }) {
   const getPricePerDay = (totalDays: number) => {
@@ -121,6 +123,15 @@ export function Cart({
               >
                 <Banknote className="h-5 w-5 mr-2" />
                 Pagar en Efectivo
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 h-12 font-semibold bg-transparent"
+                onClick={onTransferPayment}
+              >
+                <Banknote className="h-5 w-5 mr-2" />
+                Pagar por Transferencia
               </Button>
             </div>
 

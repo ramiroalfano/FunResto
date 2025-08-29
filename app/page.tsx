@@ -12,6 +12,8 @@ import { MyAccount } from "../components/my-account"
 import { AdminOrders } from "../components/admin-orders"
 import { AdminLogin } from "../components/admin-login"
 import { WhatsAppFloat } from "../components/whatsapp-float"
+import { db } from "../lib/firebaseConfig";
+import { ref, push } from "firebase/database";
 
 interface Order {
   id: string
@@ -21,11 +23,12 @@ interface Order {
   totalAmount: number
   date: string
   status: "completed" | "pending" | "delivered"
-  paymentMethod: "mercadopago" | "efectivo"
+  paymentMethod: "mercadopago" | "efectivo" | "transferencia"
   paymentStatus: "pagado" | "pendiente"
   parentName: string
   parentEmail: string
   parentPhone: string
+  transferImage?: string
 }
 
 export default function MealDeliveryPage() {
@@ -82,7 +85,12 @@ export default function MealDeliveryPage() {
     setIsCheckoutOpen(true)
   }
 
-  const handleCloseCheckout = (orderData?: { childName: string; course: string; paymentMethod: string }) => {
+  const handleTransferPayment = () => {
+    setPaymentMethod("cash") // Usar 'cash' para transferencias, ya que el estado solo acepta 'mercadopago' o 'cash'
+    setIsCheckoutOpen(true)
+  }
+
+  const handleCloseCheckout = async (orderData?: { childName: string; course: string; paymentMethod: string; transferImage?: string }) => {
     if (orderData && selectedDays.length > 0) {
       const checkoutPricePerDay = getPricePerDay(selectedDays.length)
       const checkoutTotal = selectedDays.length * checkoutPricePerDay
@@ -94,14 +102,20 @@ export default function MealDeliveryPage() {
         selectedDays: [...selectedDays],
         totalAmount: checkoutTotal,
         date: new Date().toLocaleDateString("es-ES"),
-        status: orderData.paymentMethod === "cash" ? "pending" : "completed",
-        paymentMethod: orderData.paymentMethod === "cash" ? "efectivo" : "mercadopago",
-        paymentStatus: orderData.paymentMethod === "cash" ? "pendiente" : "pagado",
+        status: orderData.paymentMethod === "cash" || orderData.paymentMethod === "transfer" ? "pending" : "completed",
+        paymentMethod: orderData.paymentMethod === "cash" ? "efectivo" : orderData.paymentMethod === "transfer" ? "transferencia" : "mercadopago",
+        paymentStatus: orderData.paymentMethod === "cash" || orderData.paymentMethod === "transfer" ? "pendiente" : "pagado",
         parentName: "Juan Pérez",
         parentEmail: "juan.perez@email.com",
         parentPhone: "+54 11 1234-5678",
+        transferImage: orderData.transferImage,
       }
       setOrders((prev) => [newOrder, ...prev])
+      try {
+        await push(ref(db, "orders"), newOrder)
+      } catch (error) {
+        console.error("Error guardando el pedido en Realtime Database:", error)
+      }
     }
     setIsCheckoutOpen(false)
     setSelectedDays([])
@@ -125,14 +139,34 @@ export default function MealDeliveryPage() {
     setIsAdminAuthenticated(true)
   }
 
+  const handleUpdateOrderStatus = (orderId: string, newStatus: "pending" | "approved" | "rejected") => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) => {
+        if (order.id === orderId) {
+          // Mapear 'approved' a 'completed', 'rejected' a 'pending' (o el valor que prefieras)
+          let mappedStatus: "pending" | "completed" | "delivered" = order.status;
+          if (newStatus === "approved") mappedStatus = "completed";
+          else if (newStatus === "rejected") mappedStatus = "pending";
+          else mappedStatus = newStatus;
+          return {
+            ...order,
+            status: mappedStatus,
+            paymentStatus: newStatus === "approved" ? "pagado" : order.paymentStatus,
+          }
+        }
+        return order
+      })
+    )
+  }
+
   const renderMainContent = () => {
     switch (activeSection) {
       case "mis-pedidos":
         return <MyOrders orders={orders} />
       case "mi-cuenta":
         return <MyAccount />
-      case "admin":
-        return isAdminAuthenticated ? <AdminOrders orders={orders} /> : <AdminLogin onLogin={handleAdminLogin} />
+            case "admin":
+        return isAdminAuthenticated ? <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} /> : <AdminLogin onLogin={handleAdminLogin} />
       case "contacto":
         return (
           <div className="max-w-2xl mx-auto">
@@ -148,6 +182,7 @@ export default function MealDeliveryPage() {
                 <h3 className="font-semibold text-foreground mb-2">Horarios de Atención</h3>
                 <p className="text-muted-foreground">Lunes a Viernes: 8:00 - 18:00</p>
                 <p className="text-muted-foreground">Sábados: 9:00 - 14:00</p>
+                
               </div>
             </div>
           </div>
@@ -188,12 +223,13 @@ export default function MealDeliveryPage() {
               <div
                 className={`${isCartOpen ? "translate-x-0" : "translate-x-full"} transition-transform duration-300 ease-in-out fixed right-0 top-0 z-30 h-full w-80 bg-card shadow-lg`}
               >
-                <Cart
-                  selectedDays={selectedDays}
-                  onCheckout={handleCheckout}
-                  onCashPayment={handleCashPayment}
-                  onClose={closeCart}
-                />
+                                 <Cart
+                   selectedDays={selectedDays}
+                   onCheckout={handleCheckout}
+                   onCashPayment={handleCashPayment}
+                   onTransferPayment={handleTransferPayment}
+                   onClose={closeCart}
+                 />
               </div>
             </>
           )}
