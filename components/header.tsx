@@ -38,12 +38,12 @@ export function Header({
           </Button>
         )}
 
-        <Button variant="ghost" onClick={onContactClick} className="flex items-center gap-2 hover:bg-[#C56B22] hover:text-white">
+        <Button variant="ghost" onClick={onContactClick} className="flex items-center gap-2 hover:bg-accent">
           <Phone className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium text-foreground hidden sm:inline">Contacto</span>
         </Button>
 
-        <Button variant="ghost" onClick={onAccountClick} className="flex items-center gap-2 hover:bg-[#C56B22] hover:text-white">
+        <Button variant="ghost" onClick={onAccountClick} className="flex items-center gap-2 hover:bg-accent">
           <User className="h-5 w-5 text-muted-foreground" />
           <span className="font-semibold text-foreground">Mi Cuenta</span>
         </Button>

@@ -6,40 +6,68 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Heart } from "lucide-react"
 
-const mealCategories = ["Todas", "Carnes", "Pollo", "Pescado", "Pasta"]
+const mealCategories = ["Todas", "Carnes", "Pollo", "Pescado", "Vegetariano", "Vegano", "Pasta"]
 
 const meals = [
   {
     id: 1,
-    name: "Lunes",
-    description: "Milanesas de pollo con pure",
-    image: "/milanesas.jpg",
+    name: "Pollo Grillado con Verduras",
+    description: "Pechuga de pollo a la plancha con mix de vegetales salteados",
+    price: 2500,
+    image: "/grilled-chicken-vegetables.png",
     category: "Pollo",
-    protein: "Las imagenes son a modo ilustrativo",
+    calories: 420,
+    protein: "35g",
   },
   {
     id: 2,
-    name: "Martes",
-    description: "Fideos con salsa a eleccion",
-    image: "/fideos.jpg",
-    category: "Pasta",
-    protein: "Las imagenes son a modo ilustrativo",
+    name: "Salmón con Quinoa",
+    description: "Filete de salmón al horno con quinoa y espárragos",
+    price: 3200,
+    image: "/salmon-with-quinoa-and-asparagus.png",
+    category: "Pescado",
+    calories: 480,
+    protein: "40g",
   },
   {
     id: 3,
-    name: "Miercoles",
-    description: "Bifes grille con papas doradas",
-    image: "/bifes.jpg",
-    category: "Carnes",
-    protein: "Las imagenes son a modo ilustrativo",
+    name: "Bowl Vegano Completo",
+    description: "Garbanzos, quinoa, palta, tomate cherry y aderezo tahini",
+    price: 2200,
+    image: "/vegan-bowl-with-chickpeas-quinoa-avocado.png",
+    category: "Vegano",
+    calories: 380,
+    protein: "18g",
   },
   {
     id: 4,
-    name: "Jueves",
-    description: "Tacos y Quesadillas",
-    image: "/tacos.jpg",
+    name: "Pasta con Pollo y Pesto",
+    description: "Penne con tiras de pollo, salsa pesto y tomates secos",
+    price: 2800,
+    image: "/pasta-with-chicken-and-pesto-sauce.png",
     category: "Pasta",
-    protein: "Las imagenes son a modo ilustrativo",
+    calories: 520,
+    protein: "28g",
+  },
+  {
+    id: 5,
+    name: "Bife con Puré de Batata",
+    description: "Bife de chorizo con puré de batata y ensalada verde",
+    price: 3500,
+    image: "/beef-steak-with-sweet-potato-mash.png",
+    category: "Carnes",
+    calories: 580,
+    protein: "45g",
+  },
+  {
+    id: 6,
+    name: "Ensalada Mediterránea",
+    description: "Mix de hojas verdes, queso feta, aceitunas y vinagreta",
+    price: 1800,
+    image: "/mediterranean-salad.png",
+    category: "Vegetariano",
+    calories: 320,
+    protein: "12g",
   },
 ]
 
@@ -92,7 +120,7 @@ export function MealGrid() {
         {filteredMeals.map((meal) => (
           <Card key={meal.id} className="overflow-hidden bg-card border-border hover:shadow-lg transition-shadow">
             <div className="relative">
-              <img src={meal.image || "/placeholder.svg"} alt={meal.name} className="w-full h-64 object-cover" />
+              <img src={meal.image || "/placeholder.svg"} alt={meal.name} className="w-full h-48 object-cover" />
               <Button
                 variant="ghost"
                 size="icon"
@@ -104,21 +132,22 @@ export function MealGrid() {
                 <Heart className={`h-5 w-5 ${favorites.has(meal.id) ? "fill-current" : ""}`} />
               </Button>
             </div>
-            <CardContent className="p-4 text-center">
-              <div className="flex flex-col items-center mb-2">
-                <h3 className="font-semibold text-card-foreground mb-2">{meal.name}</h3>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-card-foreground">{meal.name}</h3>
                 <Badge variant="secondary" className="bg-muted text-muted-foreground">
                   {meal.category}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mb-3">{meal.description}</p>
-              <div className="flex flex-col items-center mb-3">
-                <div className="text-xs text-muted-foreground">
-                  <span>{meal.protein}</span>
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex gap-4 text-xs text-muted-foreground">
+                  <span>{meal.calories} cal</span>
+                  <span>{meal.protein} proteína</span>
                 </div>
               </div>
-              <div className="flex justify-center items-center">
-                <span className="text-lg font-bold text-primary"></span>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-primary">${meal.price}</span>
               </div>
             </CardContent>
           </Card>

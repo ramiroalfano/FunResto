@@ -10,11 +10,9 @@ import {
   CreditCard,
   Banknote,
   Search,
-  X,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
@@ -26,26 +24,22 @@ interface AdminOrder {
   selectedDays: string[]
   totalAmount: number
   date: string
-  status: "completed" | "pending" | "delivered" | "approved" | "rejected"
-  paymentMethod: "mercadopago" | "efectivo" | "transferencia"
+  status: "completed" | "pending" | "delivered"
+  paymentMethod: "mercadopago" | "efectivo"
   paymentStatus: "pagado" | "pendiente"
   parentName: string
   parentEmail: string
   parentPhone: string
-  transferImage?: string
 }
 
 interface AdminOrdersProps {
   orders: AdminOrder[]
-  onUpdateOrderStatus?: (orderId: string, newStatus: "pending" | "approved" | "rejected") => void
 }
 
-export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
+export function AdminOrders({ orders }: AdminOrdersProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
-  const [selectedTransferImage, setSelectedTransferImage] = useState<string | null>(null)
-  const [showTransferModal, setShowTransferModal] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -55,10 +49,6 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
         return "bg-yellow-100 text-yellow-800"
       case "delivered":
         return "bg-blue-100 text-blue-800"
-      case "approved":
-        return "bg-green-100 text-green-800"
-      case "rejected":
-        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -72,10 +62,6 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
         return "Pendiente"
       case "delivered":
         return "Entregado"
-      case "approved":
-        return "Aprobado"
-      case "rejected":
-        return "Rechazado"
       default:
         return status
     }
@@ -103,16 +89,6 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
 
     return matchesSearch && matchesStatus && matchesPayment
   })
-
-  const handleViewTransferImage = (imageUrl: string) => {
-    setSelectedTransferImage(imageUrl)
-    setShowTransferModal(true)
-  }
-
-  const handleCloseTransferModal = () => {
-    setShowTransferModal(false)
-    setSelectedTransferImage(null)
-  }
 
   if (orders.length === 0) {
     return (
@@ -142,19 +118,17 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
           />
         </div>
 
-                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-           <SelectTrigger>
-             <SelectValue placeholder="Filtrar por estado" />
-           </SelectTrigger>
-           <SelectContent>
-             <SelectItem value="all">Todos los estados</SelectItem>
-             <SelectItem value="pending">Pendiente</SelectItem>
-             <SelectItem value="approved">Aprobado</SelectItem>
-             <SelectItem value="rejected">Rechazado</SelectItem>
-             <SelectItem value="completed">Completado</SelectItem>
-             <SelectItem value="delivered">Entregado</SelectItem>
-           </SelectContent>
-         </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger>
+            <SelectValue placeholder="Filtrar por estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los estados</SelectItem>
+            <SelectItem value="pending">Pendiente</SelectItem>
+            <SelectItem value="completed">Completado</SelectItem>
+            <SelectItem value="delivered">Entregado</SelectItem>
+          </SelectContent>
+        </Select>
 
         <Select value={paymentFilter} onValueChange={setPaymentFilter}>
           <SelectTrigger>
@@ -164,51 +138,42 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
             <SelectItem value="all">Todos los pagos</SelectItem>
             <SelectItem value="mercadopago">Mercado Pago</SelectItem>
             <SelectItem value="efectivo">Efectivo</SelectItem>
-            <SelectItem value="transferencia">Transferencia</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-         <Card>
-           <CardContent className="p-4">
-             <div className="text-2xl font-bold text-primary">{orders.length}</div>
-             <div className="text-sm text-muted-foreground">Total Pedidos</div>
-           </CardContent>
-         </Card>
-         <Card>
-           <CardContent className="p-4">
-             <div className="text-2xl font-bold text-green-600">
-               {orders.filter((o) => o.paymentStatus === "pagado").length}
-             </div>
-             <div className="text-sm text-muted-foreground">Pagados</div>
-           </CardContent>
-         </Card>
-         <Card>
-           <CardContent className="p-4">
-             <div className="text-2xl font-bold text-yellow-600">
-               {orders.filter((o) => o.paymentStatus === "pendiente").length}
-             </div>
-             <div className="text-sm text-muted-foreground">Pendientes</div>
-           </CardContent>
-         </Card>
-         <Card>
-           <CardContent className="p-4">
-             <div className="text-2xl font-bold text-blue-600">
-               {orders.filter((o) => o.status === "approved").length}
-             </div>
-             <div className="text-sm text-muted-foreground">Aprobados</div>
-           </CardContent>
-         </Card>
-         <Card>
-           <CardContent className="p-4">
-             <div className="text-2xl font-bold text-purple-600">
-               ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toLocaleString()}
-             </div>
-             <div className="text-sm text-muted-foreground">Total Ventas</div>
-           </CardContent>
-         </Card>
-       </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-primary">{orders.length}</div>
+            <div className="text-sm text-muted-foreground">Total Pedidos</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-600">
+              {orders.filter((o) => o.paymentStatus === "pagado").length}
+            </div>
+            <div className="text-sm text-muted-foreground">Pagados</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-red-600">
+              {orders.filter((o) => o.paymentStatus === "pendiente").length}
+            </div>
+            <div className="text-sm text-muted-foreground">Pendientes</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-blue-600">
+              ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toLocaleString()}
+            </div>
+            <div className="text-sm text-muted-foreground">Total Ventas</div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="space-y-4">
         {filteredOrders.map((order) => (
@@ -216,55 +181,20 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Pedido #{order.id.slice(-6)}</CardTitle>
-                                 <div className="flex gap-2">
-                   <Badge className={getStatusColor(order.status)}>
-                     <CheckCircle className="w-3 h-3 mr-1" />
-                     {getStatusText(order.status)}
-                   </Badge>
-                   <Badge className={getPaymentStatusColor(order.paymentStatus)}>
-                     {order.paymentMethod === "mercadopago" ? (
-                       <CreditCard className="w-3 h-3 mr-1" />
-                     ) : order.paymentMethod === "transferencia" ? (
-                       <Banknote className="w-3 h-3 mr-1" />
-                     ) : (
-                       <Banknote className="w-3 h-3 mr-1" />
-                     )}
-                     {order.paymentStatus === "pagado" ? "Pagado" : "Pendiente"}
-                   </Badge>
-                 </div>
-                 
-                                   {onUpdateOrderStatus && order.paymentStatus === "pendiente" && (
-                    <div className="flex gap-2 mt-3">
-                      {order.paymentMethod === "transferencia" && order.transferImage && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                          onClick={() => handleViewTransferImage(order.transferImage!)}
-                        >
-                          <Banknote className="w-3 h-3 mr-1" />
-                          Ver Transferencia
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => onUpdateOrderStatus(order.id, "approved")}
-                      >
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Aprobar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-red-600 text-red-600 hover:bg-red-50"
-                        onClick={() => onUpdateOrderStatus(order.id, "rejected")}
-                      >
-                        <X className="w-3 h-3 mr-1" />
-                        Rechazar
-                      </Button>
-                    </div>
-                  )}
+                <div className="flex gap-2">
+                  <Badge className={getStatusColor(order.status)}>
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    {getStatusText(order.status)}
+                  </Badge>
+                  <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                    {order.paymentMethod === "mercadopago" ? (
+                      <CreditCard className="w-3 h-3 mr-1" />
+                    ) : (
+                      <Banknote className="w-3 h-3 mr-1" />
+                    )}
+                    {order.paymentStatus === "pagado" ? "Pagado" : "Pendiente"}
+                  </Badge>
+                </div>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
@@ -275,7 +205,7 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
                   <span className="font-medium">${order.totalAmount.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  {order.paymentMethod === "mercadopago" ? "Mercado Pago" : order.paymentMethod === "transferencia" ? "Transferencia" : "Efectivo"}
+                  {order.paymentMethod === "mercadopago" ? "Mercado Pago" : "Efectivo"}
                 </div>
               </div>
             </CardHeader>
@@ -321,34 +251,8 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
               </div>
             </CardContent>
           </Card>
-                 ))}
-       </div>
-
-       {/* Modal para mostrar imagen de transferencia */}
-       {showTransferModal && selectedTransferImage && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-           <div className="bg-white rounded-lg max-w-2xl max-h-[90vh] overflow-auto">
-             <div className="p-4 border-b flex justify-between items-center">
-               <h3 className="text-lg font-semibold">Comprobante de Transferencia</h3>
-               <Button
-                 variant="ghost"
-                 size="icon"
-                 onClick={handleCloseTransferModal}
-                 className="h-8 w-8"
-               >
-                 <X className="h-4 w-4" />
-               </Button>
-             </div>
-             <div className="p-4">
-               <img
-                 src={selectedTransferImage}
-                 alt="Comprobante de transferencia"
-                 className="w-full h-auto rounded-lg border"
-               />
-             </div>
-           </div>
-         </div>
-       )}
-     </div>
-   )
- }
+        ))}
+      </div>
+    </div>
+  )
+}
