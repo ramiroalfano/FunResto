@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { SidebarNav } from "../components/sidebar-nav"
 import { Header } from "../components/header"
 import { WeeklyPlanner } from "../components/weekly-planner"
@@ -12,21 +12,9 @@ import { MyAccount } from "../components/my-account"
 import { AdminOrders } from "../components/admin-orders"
 import { AdminLogin } from "../components/admin-login"
 import { WhatsAppFloat } from "../components/whatsapp-float"
-
-interface Order {
-  id: string
-  childName: string
-  course: string
-  selectedDays: string[]
-  totalAmount: number
-  date: string
-  status: "completed" | "pending" | "delivered"
-  paymentMethod: "mercadopago" | "efectivo"
-  paymentStatus: "pagado" | "pendiente"
-  parentName: string
-  parentEmail: string
-  parentPhone: string
-}
+import { auth } from "../lib/firebaseConfig"
+import { onAuthStateChanged, User } from "firebase/auth"
+import { createOrder, uploadFile, listenOrders, Order } from "../lib/ordersService"
 
 export default function MealDeliveryPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -35,8 +23,23 @@ export default function MealDeliveryPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<"mercadopago" | "cash">("mercadopago")
   const [activeSection, setActiveSection] = useState("viandas")
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<(Order & { id: string })[]>([])
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (currentUser) {
+      const unsubscribe = listenOrders(setOrders)
+      return () => unsubscribe()
+    }
+  }, [currentUser])
 
   const getPricePerDay = (totalDays: number) => {
     if (totalDays >= 1 && totalDays <= 3) {
@@ -77,34 +80,36 @@ export default function MealDeliveryPage() {
     setIsCheckoutOpen(true)
   }
 
-  const handleCashPayment = () => {
-    setPaymentMethod("cash")
-    setIsCheckoutOpen(true)
+  const handleCashPayment = async (receipt: File) => {
+    if (!currentUser) {
+      alert("Debes iniciar sesión para realizar un pedido.")
+      return
+    }
+
+    try {
+      const receiptUrl = await uploadFile(receipt, `receipts/${currentUser.uid}/${Date.now()}`)
+      const newOrder = {
+        items: selectedDays.map((day) => ({ day, price: pricePerDay })),
+        total,
+        userId: currentUser.uid,
+        status: "pending",
+        receiptUrl,
+        paymentMethod: "efectivo",
+        paymentStatus: "pendiente",
+        createdAt: new Date().toISOString(),
+      }
+      await createOrder(newOrder)
+      alert("Pedido realizado con éxito. Esperando aprobación del administrador.")
+      setSelectedDays([])
+      setIsCartOpen(false)
+    } catch (error: any) {
+      console.error("Error al realizar el pedido:", error)
+      alert(`Ocurrió un error al procesar tu pedido: ${error.message}`)
+    }
   }
 
-  const handleCloseCheckout = (orderData?: { childName: string; course: string; paymentMethod: string }) => {
-    if (orderData && selectedDays.length > 0) {
-      const checkoutPricePerDay = getPricePerDay(selectedDays.length)
-      const checkoutTotal = selectedDays.length * checkoutPricePerDay
-
-      const newOrder: Order = {
-        id: `ORD-${Date.now()}`,
-        childName: orderData.childName,
-        course: orderData.course,
-        selectedDays: [...selectedDays],
-        totalAmount: checkoutTotal,
-        date: new Date().toLocaleDateString("es-ES"),
-        status: orderData.paymentMethod === "cash" ? "pending" : "completed",
-        paymentMethod: orderData.paymentMethod === "cash" ? "efectivo" : "mercadopago",
-        paymentStatus: orderData.paymentMethod === "cash" ? "pendiente" : "pagado",
-        parentName: "Juan Pérez",
-        parentEmail: "juan.perez@email.com",
-        parentPhone: "+54 11 1234-5678",
-      }
-      setOrders((prev) => [newOrder, ...prev])
-    }
+  const handleCloseCheckout = () => {
     setIsCheckoutOpen(false)
-    setSelectedDays([])
   }
 
   const handleSectionChange = (section: string) => {
@@ -128,7 +133,7 @@ export default function MealDeliveryPage() {
   const renderMainContent = () => {
     switch (activeSection) {
       case "mis-pedidos":
-        return <MyOrders orders={orders} />
+        return <MyOrders orders={orders}/>
       case "mi-cuenta":
         return <MyAccount />
       case "admin":

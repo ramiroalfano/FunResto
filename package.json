@@ -43,10 +43,11 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "firebase": "^12.2.1",
     "geist": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "15.2.4",
+    "next": "^15.5.2",
     "next-themes": "latest",
     "react": "^19",
     "react-day-picker": "9.8.0",
@@ -64,9 +65,9 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "firebase-admin": "^13.5.0",
     "postcss": "^8.5",
-  "tailwindcss": "^3.4.17",
-  "typescript": "^5",
-  "firebase-admin": "^11.5.0"
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5"
   }
 }

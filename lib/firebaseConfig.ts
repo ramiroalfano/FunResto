@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 // Prefer NEXT_PUBLIC_ (Next.js) but also accept REACT_APP_ keys if present.
 const firebaseConfig = {
@@ -26,5 +27,6 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 const db = getDatabase(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { db, auth };
+export { db, auth, storage };

@@ -3,19 +3,10 @@
 import { Calendar, User, GraduationCap, Clock, CheckCircle, ShoppingBag } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-
-interface Order {
-  id: string
-  childName: string
-  course: string
-  selectedDays: string[]
-  totalAmount: number
-  date: string
-  status: "completed" | "pending" | "delivered"
-}
+import { Order } from "../lib/ordersService"
 
 interface MyOrdersProps {
-  orders: Order[]
+  orders: (Order & { id: string })[]
 }
 
 export function MyOrders({ orders }: MyOrdersProps) {
@@ -27,6 +18,8 @@ export function MyOrders({ orders }: MyOrdersProps) {
         return "bg-yellow-100 text-yellow-800"
       case "delivered":
         return "bg-blue-100 text-blue-800"
+      case "rejected":
+        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -40,6 +33,8 @@ export function MyOrders({ orders }: MyOrdersProps) {
         return "Pendiente"
       case "delivered":
         return "Entregado"
+      case "rejected":
+        return "Rechazado"
       default:
         return status
     }
@@ -69,25 +64,25 @@ export function MyOrders({ orders }: MyOrdersProps) {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Pedido #{order.id.slice(-6)}</CardTitle>
-                <Badge className={getStatusColor(order.status)}>
+                <Badge className={getStatusColor(order.status || "")}>
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  {getStatusText(order.status)}
+                  {getStatusText(order.status || "")}
                 </Badge>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  {order.date}
+                  {new Date(order.createdAt || "").toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="font-medium">${order.totalAmount}</span>
+                  <span className="font-medium">${(order.total || 0).toLocaleString()}</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-primary" />
                     <span className="font-medium">Estudiante:</span>
                     <span>{order.childName}</span>
@@ -104,9 +99,9 @@ export function MyOrders({ orders }: MyOrdersProps) {
                     <span className="font-medium">Días seleccionados:</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {order.selectedDays.map((day) => (
-                      <Badge key={day} variant="outline" className="text-xs">
-                        {day}
+                    {(order.items || []).map((item: any) => (
+                      <Badge key={item.day} variant="outline" className="text-xs">
+                         {new Date(item.day).toLocaleDateString("es-ES", { weekday: 'short', day: 'numeric', month: 'short' })}
                       </Badge>
                     ))}
                   </div>

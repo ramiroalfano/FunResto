@@ -1,5 +1,6 @@
 import { ref, push, set, onValue, update, get, DataSnapshot } from "firebase/database";
-import { db, auth } from "./firebaseConfig";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "./firebaseConfig";
 
 export type Order = {
   items: any[];
@@ -8,8 +9,18 @@ export type Order = {
   status?: string;
   createdAt?: string;
   updatedAt?: string;
+  receiptUrl?: string;
   [key: string]: any;
 };
+
+/**
+ * Sube un archivo a Firebase Storage y devuelve la URL de descarga.
+ */
+export async function uploadFile(file: File, path: string): Promise<string> {
+  const fileRef = storageRef(storage, path);
+  await uploadBytes(fileRef, file);
+  return await getDownloadURL(fileRef);
+}
 
 /**
  * Crea un nuevo pedido en Realtime Database y devuelve el id generado.
@@ -83,4 +94,5 @@ export default {
   updateOrder,
   getOrderById,
   isCurrentUserAdmin,
+  uploadFile,
 };

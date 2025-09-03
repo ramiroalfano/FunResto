@@ -1,7 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { CreditCard, Edit2, Calendar, X, Banknote } from "lucide-react"
+import { CreditCard, Edit2, Calendar, X, Banknote, Upload } from "lucide-react"
+import { useRef, useState } from "react"
 
 const cartItems = [
   { title: "Original Chess Meat Burger With Chips (Non Veg)", price: 23.99, quantity: 1 },
@@ -18,9 +19,12 @@ export function Cart({
 }: {
   selectedDays?: string[]
   onCheckout?: () => void
-  onCashPayment?: () => void
+  onCashPayment?: (file: File) => void
   onClose?: () => void
 }) {
+  const [receipt, setReceipt] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const getPricePerDay = (totalDays: number) => {
     if (totalDays >= 1 && totalDays <= 3) {
       return 6000
@@ -30,6 +34,20 @@ export function Cart({
       return 4500
     }
     return 4500
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setReceipt(event.target.files[0])
+    }
+  }
+
+  const handleCashPayment = () => {
+    if (receipt && onCashPayment) {
+      onCashPayment(receipt)
+    } else if (!receipt) {
+      alert("Por favor, sube un comprobante de pago.")
+    }
   }
 
   const pricePerDay = getPricePerDay(selectedDays.length)
@@ -104,7 +122,7 @@ export function Cart({
               </div>
               <p className="text-xs text-blue-600">Procesado por Mercado Pago - Tarjetas de crédito y débito</p>
             </div>
-
+            
             <div className="space-y-3">
               <Button
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold"
@@ -116,8 +134,19 @@ export function Cart({
 
               <Button
                 variant="outline"
+                className="w-full border-gray-300 text-gray-700 hover:bg-gray-100 h-12 font-semibold bg-transparent"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-5 w-5 mr-2" />
+                Subir Comprobante
+              </Button>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+              {receipt && <p className="text-sm text-center text-gray-600">Comprobante: {receipt.name}</p>}
+
+              <Button
+                variant="outline"
                 className="w-full border-green-600 text-green-600 hover:bg-green-50 h-12 font-semibold bg-transparent"
-                onClick={onCashPayment}
+                onClick={handleCashPayment}
               >
                 <Banknote className="h-5 w-5 mr-2" />
                 Pagar en Efectivo

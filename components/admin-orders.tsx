@@ -10,36 +10,45 @@ import {
   CreditCard,
   Banknote,
   Search,
+  Check,
+  X,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 import { useState } from "react"
-
-interface AdminOrder {
-  id: string
-  childName: string
-  course: string
-  selectedDays: string[]
-  totalAmount: number
-  date: string
-  status: "completed" | "pending" | "delivered"
-  paymentMethod: "mercadopago" | "efectivo"
-  paymentStatus: "pagado" | "pendiente"
-  parentName: string
-  parentEmail: string
-  parentPhone: string
-}
+import { updateOrder, Order } from "../lib/ordersService"
 
 interface AdminOrdersProps {
-  orders: AdminOrder[]
+  orders: (Order & { id: string })[]
 }
 
 export function AdminOrders({ orders }: AdminOrdersProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
+
+  const handleApprove = async (orderId: string) => {
+    try {
+      await updateOrder(orderId, { status: "completed" })
+      alert("Pedido aprobado con éxito.")
+    } catch (error) {
+      console.error("Error al aprobar el pedido:", error)
+      alert("Ocurrió un error al aprobar el pedido.")
+    }
+  }
+
+  const handleReject = async (orderId: string) => {
+    try {
+      await updateOrder(orderId, { status: "rejected" })
+      alert("Pedido rechazado con éxito.")
+    } catch (error) {
+      console.error("Error al rechazar el pedido:", error)
+      alert("Ocurrió un error al rechazar el pedido.")
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -49,6 +58,8 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
         return "bg-yellow-100 text-yellow-800"
       case "delivered":
         return "bg-blue-100 text-blue-800"
+      case "rejected":
+        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -62,6 +73,8 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
         return "Pendiente"
       case "delivered":
         return "Entregado"
+      case "rejected":
+        return "Rechazado"
       default:
         return status
     }
@@ -80,9 +93,9 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.childName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.parentName.toLowerCase().includes(searchTerm.toLowerCase())
+      (order.childName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (order.course?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (order.parentName?.toLowerCase() || "").includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || order.status === statusFilter
     const matchesPayment = paymentFilter === "all" || order.paymentMethod === paymentFilter
@@ -127,6 +140,7 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
             <SelectItem value="pending">Pendiente</SelectItem>
             <SelectItem value="completed">Completado</SelectItem>
             <SelectItem value="delivered">Entregado</SelectItem>
+            <SelectItem value="rejected">Rechazado</SelectItem>
           </SelectContent>
         </Select>
 
@@ -168,7 +182,7 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">
-              ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toLocaleString()}
+              ${orders.reduce((sum, order) => sum + (order.total || 0), 0).toLocaleString()}
             </div>
             <div className="text-sm text-muted-foreground">Total Ventas</div>
           </CardContent>
@@ -182,11 +196,11 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Pedido #{order.id.slice(-6)}</CardTitle>
                 <div className="flex gap-2">
-                  <Badge className={getStatusColor(order.status)}>
+                  <Badge className={getStatusColor(order.status || "")}>
                     <CheckCircle className="w-3 h-3 mr-1" />
-                    {getStatusText(order.status)}
+                    {getStatusText(order.status || "")}
                   </Badge>
-                  <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                  <Badge className={getPaymentStatusColor(order.paymentStatus || "")}>
                     {order.paymentMethod === "mercadopago" ? (
                       <CreditCard className="w-3 h-3 mr-1" />
                     ) : (
@@ -199,10 +213,10 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  {order.date}
+                  {new Date(order.createdAt || "").toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="font-medium">${order.totalAmount.toLocaleString()}</span>
+                  <span className="font-medium">${(order.total || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {order.paymentMethod === "mercadopago" ? "Mercado Pago" : "Efectivo"}
@@ -238,17 +252,39 @@ export function AdminOrders({ orders }: AdminOrdersProps) {
                   </h4>
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">{order.selectedDays.length} días</span>
+                    <span className="text-sm font-medium">{(order.items || []).length} días</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {order.selectedDays.map((day) => (
-                      <Badge key={day} variant="outline" className="text-xs">
-                        {day}
+                    {(order.items || []).map((item: any) => (
+                      <Badge key={item.day} variant="outline" className="text-xs">
+                        {new Date(item.day).toLocaleDateString("es-ES", { weekday: 'short', day: 'numeric', month: 'short' })}
                       </Badge>
                     ))}
                   </div>
                 </div>
               </div>
+
+              {order.receiptUrl && (
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2">
+                    Comprobante de Pago
+                  </h4>
+                  <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer">
+                    <img src={order.receiptUrl} alt="Comprobante" className="max-w-xs rounded-lg" />
+                  </a>
+                </div>
+              )}
+
+              {order.status === "pending" && (
+                <div className="mt-4 pt-4 border-t flex justify-end gap-2">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApprove(order.id)}>
+                    <Check className="w-4 h-4 mr-1" /> Aprobar
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleReject(order.id)}>
+                    <X className="w-4 h-4 mr-1" /> Rechazar
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
