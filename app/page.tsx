@@ -108,7 +108,8 @@ export default function MealDeliveryPage() {
         parentName: "Juan Pérez",
         parentEmail: "juan.perez@email.com",
         parentPhone: "+54 11 1234-5678",
-        transferImage: orderData.transferImage,
+  // Only include transferImage when it's defined (Realtime DB rejects undefined values)
+  ...(orderData.transferImage ? { transferImage: orderData.transferImage } : {}),
       }
       setOrders((prev) => [newOrder, ...prev])
       try {
