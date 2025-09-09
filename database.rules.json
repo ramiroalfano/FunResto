@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "admins": {
+      ".read": "auth != null",
+      ".write": "auth.token.admin === true"
+    },
+    "orders": {
+      ".read": "auth != null",
+      "$orderId": {
+        // Un usuario puede crear/actualizar su propio pedido, O un admin puede escribir.
+        ".write": "auth.token.admin === true || (data.exists() && data.child('userId').val() === auth.uid) || (newData.exists() && newData.child('userId').val() === auth.uid)"
+      }
+    }
+  }
+}

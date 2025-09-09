@@ -1,86 +1,111 @@
-import { ref, push, set, onValue, update, get, DataSnapshot } from "firebase/database";
-import { db, auth } from "./firebaseConfig";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getDatabase, ref, set, onValue, get } from "firebase/database";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-export type Order = {
-  items: any[];
-  total: number;
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+};
+
+// Inicialización de la app de Firebase
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db = getDatabase(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+// Interfaz para el tipo de Pedido
+export interface Order {
   userId: string;
-  status?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  [key: string]: any;
+  items: { title: string; price: number; quantity: number }[];
+  total: number;
+  childName: string;
+  course: string;
+  selectedDays: string[];
+  date: string;
+  status: "pending" | "completed" | "delivered" | "approved" | "rejected";
+  paymentMethod: "mercadopago" | "cash" | "transfer";
+  paymentStatus: "pagado" | "pendiente";
+  parentName: string;
+  parentEmail: string;
+  parentPhone: string;
+  transferImage?: string;
+}
+
+/**
+ * Guarda un nuevo pedido en la base de datos.
+ * @param order El objeto de pedido a guardar.
+ */
+export const createOrder = (order: Omit<Order, 'id'>) => {
+  const orderRef = ref(db, 'orders/' + new Date().getTime()); // Usar timestamp como ID simple
+  return set(orderRef, order);
 };
 
 /**
- * Crea un nuevo pedido en Realtime Database y devuelve el id generado.
+ * Actualiza el estado de un pedido específico en la base de datos.
+ * @param orderId El ID del pedido a actualizar.
+ * @param newStatus El nuevo estado del pedido.
  */
-export async function createOrder(order: Order): Promise<string> {
-  const ordersRef = ref(db, "orders");
-  const newRef = push(ordersRef);
-  const payload = {
-    ...order,
-    status: order.status || "pendiente",
-    createdAt: new Date().toISOString(),
-  };
-  await set(newRef, payload);
-  return newRef.key as string;
-}
+export const updateOrderStatus = (orderId: string, newStatus: "pending" | "completed" | "delivered" | "approved" | "rejected") => {
+  const orderStatusRef = ref(db, `orders/${orderId}/status`);
+  return set(orderStatusRef, newStatus);
+};
 
 /**
- * Escucha cambios en la colección `orders` y llama callback con un array de pedidos.
- * Devuelve la función unsubscribe.
+ * Verifica si el usuario actual es un administrador.
+ * Esto se hace verificando los custom claims en el token de autenticación del usuario.
+ * @returns true si el usuario es admin, false en caso contrario.
  */
-export function listenOrders(
-  callback: (orders: Array<Order & { id: string }>) => void
-): () => void {
-  const ordersRef = ref(db, "orders");
-  const unsubscribe = onValue(ordersRef, (snapshot: DataSnapshot) => {
-    const val = snapshot.val();
-    if (!val) return callback([]);
-    // val tiene la forma { id1: {...}, id2: {...} }
-    const orders = Object.keys(val).map((key) => ({ id: key, ...val[key] }));
-    // ordenar por createdAt descendente si existe
-    orders.sort((a, b) => {
-      const ta = a.createdAt ? Date.parse(a.createdAt) : 0;
-      const tb = b.createdAt ? Date.parse(b.createdAt) : 0;
-      return tb - ta;
-    });
-    callback(orders);
-  });
-  return unsubscribe;
-}
-
-/**
- * Actualiza campos de un pedido por id.
- */
-export async function updateOrder(orderId: string, updates: Partial<Order>): Promise<void> {
-  const orderRef = ref(db, `orders/${orderId}`);
-  await update(orderRef, { ...updates, updatedAt: new Date().toISOString() } as any);
-}
-
-/**
- * Obtiene un pedido por id.
- */
-export async function getOrderById(orderId: string): Promise<(Order & { id: string }) | null> {
-  const snap = await get(ref(db, `orders/${orderId}`));
-  if (!snap.exists()) return null;
-  return { id: snap.key as string, ...(snap.val() as Order) };
-}
-
-/**
- * Comprueba si el usuario actual tiene el claim `admin`.
- */
-export async function isCurrentUserAdmin(): Promise<boolean> {
+export const isCurrentUserAdmin = async (): Promise<boolean> => {
   const user = auth.currentUser;
-  if (!user) return false;
-  const token = await user.getIdTokenResult(true);
-  return !!(token.claims as any)?.admin;
-}
+  if (!user) {
+    return false;
+  }
+  try {
+    const idTokenResult = await user.getIdTokenResult(true); // Forzar la actualización del token
+    return idTokenResult.claims.admin === true;
+  } catch (error) {
+    console.error("Error al obtener el token del usuario:", error);
+    return false;
+  }
+};
 
-export default {
-  createOrder,
-  listenOrders,
-  updateOrder,
-  getOrderById,
-  isCurrentUserAdmin,
+/**
+ * Escucha los cambios en todos los pedidos (para administradores).
+ * @param callback La función que se ejecutará cada vez que los pedidos cambien.
+ * @returns Una función para desuscribirse del listener.
+ */
+export const listenOrders = (callback: (orders: Order[]) => void) => {
+  const ordersRef = ref(db, 'orders');
+  const listener = onValue(ordersRef, (snapshot) => {
+    const data = snapshot.val();
+    const ordersList = data ? Object.keys(data).map(key => ({ ...data[key], id: key })).reverse() : [];
+    callback(ordersList);
+  });
+  return listener; // Devuelve la función de cancelación de la suscripción
+};
+
+/**
+ * Escucha los cambios en los pedidos de un usuario específico.
+ * @param userId El UID del usuario.
+ * @param callback La función que se ejecutará cada vez que los pedidos del usuario cambien.
+ * @returns Una función para desuscribirse del listener.
+ */
+export const listenUserOrders = (userId: string, callback: (orders: Order[]) => void) => {
+  const ordersRef = ref(db, 'orders');
+  const listener = onValue(ordersRef, (snapshot) => {
+    const data = snapshot.val();
+    const userOrders = data ? Object.keys(data)
+      .map(key => ({ ...data[key], id: key }))
+      .filter(order => order.userId === userId)
+      .reverse()
+      : [];
+    callback(userOrders);
+  });
+  return listener;
 };

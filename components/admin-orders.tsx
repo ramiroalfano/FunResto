@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import {
   Calendar,
@@ -24,7 +24,7 @@ interface AdminOrder {
   childName: string
   course: string
   selectedDays: string[]
-  totalAmount: number
+  total: number
   date: string
   status: "completed" | "pending" | "delivered" | "approved" | "rejected"
   paymentMethod: "mercadopago" | "efectivo" | "transferencia"
@@ -203,7 +203,7 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
          <Card>
            <CardContent className="p-4">
              <div className="text-2xl font-bold text-purple-600">
-               ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toLocaleString()}
+                ${orders.reduce((sum, order) => sum + (order.total || 0), 0).toLocaleString()}
              </div>
              <div className="text-sm text-muted-foreground">Total Ventas</div>
            </CardContent>
@@ -272,7 +272,7 @@ export function AdminOrders({ orders, onUpdateOrderStatus }: AdminOrdersProps) {
                   {order.date}
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="font-medium">${order.totalAmount.toLocaleString()}</span>
+                  <span className="font-medium">${(order.total || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {order.paymentMethod === "mercadopago" ? "Mercado Pago" : order.paymentMethod === "transferencia" ? "Transferencia" : "Efectivo"}

@@ -1,53 +1,90 @@
-"use client"
+'use client'
 
-import { Menu, User, ShoppingCart, Phone } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Menu, ShoppingCart, LogOut } from "lucide-react"
+import { Button } from "./ui/button"
+import { GoogleLogin } from "./google-login"
+import { User } from "firebase/auth"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
 interface HeaderProps {
   onMenuToggle: () => void
   onCartToggle?: () => void
-  selectedDaysCount?: number
-  onAccountClick?: () => void
-  onContactClick?: () => void
+  selectedDaysCount: number
+  user: User | null
+  onSignOut: () => void
+  onAdminLoginClick: () => void
+  onContactClick: () => void
 }
 
 export function Header({
   onMenuToggle,
   onCartToggle,
-  selectedDaysCount = 0,
-  onAccountClick,
-  onContactClick,
+  selectedDaysCount,
+  user,
+  onSignOut,
+  onAdminLoginClick,
+  onContactClick
 }: HeaderProps) {
   return (
-    <div className="bg-card p-4 flex items-center gap-4 border-b border-border">
-      <Button variant="ghost" size="icon" onClick={onMenuToggle} className="md:hidden">
-        <Menu className="h-5 w-5" />
-      </Button>
+    <header className="flex items-center justify-between p-4 bg-card border-b border-border sticky top-0 z-10">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="icon" className="md:hidden" onClick={onMenuToggle}>
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
 
-      <div className="flex-1"></div>
+      <nav className="hidden md:flex items-center gap-2">
+        <Button variant="ghost" onClick={onContactClick}>Contacto</Button>
+      </nav>
 
       <div className="flex items-center gap-4">
         {onCartToggle && (
-          <Button variant="ghost" size="icon" onClick={onCartToggle} className="relative">
+          <Button variant="outline" size="icon" className="relative" onClick={onCartToggle}>
             <ShoppingCart className="h-5 w-5" />
             {selectedDaysCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {selectedDaysCount}
               </span>
             )}
           </Button>
         )}
 
-        <Button variant="ghost" onClick={onContactClick} className="flex items-center gap-2 hover:bg-[#C56B22] hover:text-white">
-          <Phone className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium text-foreground hidden sm:inline">Contacto</span>
-        </Button>
-
-        <Button variant="ghost" onClick={onAccountClick} className="flex items-center gap-2 hover:bg-[#C56B22] hover:text-white">
-          <User className="h-5 w-5 text-muted-foreground" />
-          <span className="font-semibold text-foreground">Mi Cuenta</span>
-        </Button>
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "Avatar"} />
+                  <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Cerrar Sesión</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <GoogleLogin onAdminClick={onAdminLoginClick} />
+        )}
       </div>
-    </div>
+    </header>
   )
 }
