@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
 import { Button } from "@/components/ui/button"
-import { CreditCard, Edit2, Calendar, X, Banknote } from "lucide-react"
+import { CreditCard, Calendar, X, Banknote } from "lucide-react"
 
 const cartItems = [
   { title: "Original Chess Meat Burger With Chips (Non Veg)", price: 23.99, quantity: 1 },
@@ -47,9 +47,7 @@ export function Cart({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Edit2 className="h-5 w-5" />
-          </Button>
+          <img src="/logo.png" alt="logo" className="h-8 w-auto" />
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>

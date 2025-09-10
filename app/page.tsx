@@ -14,7 +14,7 @@ import { AdminLoginModal } from "@/components/admin-login-modal"
 import { WhatsAppFloat } from "@/components/whatsapp-float"
 import { ContactForm } from "@/components/contact-form"
 import { auth } from "@/lib/firebaseConfig"
-import { createOrder, Order, listenOrders, isCurrentUserAdmin, listenUserOrders, updateOrderStatus } from "@/lib/ordersService"
+import { createOrder, Order, listenOrders, isCurrentUserAdmin, listenUserOrders, updateOrderStatus, deleteOrder } from "@/lib/ordersService"
 import { onAuthStateChanged, User, signOut, signInWithEmailAndPassword } from "firebase/auth"
 
 const getPricePerDay = (totalDays: number) => {
@@ -31,7 +31,7 @@ export default function MealDeliveryPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<"mercadopago" | "cash" | "transfer">("mercadopago")
   const [activeSection, setActiveSection] = useState("viandas")
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [user, setUser] = useState<User | null>(null);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
@@ -57,15 +57,15 @@ export default function MealDeliveryPage() {
   }, [isAdmin, activeSection]);
 
   useEffect(() => {
+    let unsubscribe = () => {};
     if (isAdmin) {
-      const unsubscribe = listenOrders(setOrders);
-      return () => unsubscribe();
+      unsubscribe = listenOrders(setOrders);
     } else if (user) {
-      const unsubscribe = listenUserOrders(user.uid, setOrders);
-      return () => unsubscribe();
+      unsubscribe = listenUserOrders(user.uid, setOrders);
     } else {
       setOrders([]);
     }
+    return () => unsubscribe();
   }, [isAdmin, user]);
 
   const pricePerDay = getPricePerDay(selectedDays.length)
@@ -133,12 +133,13 @@ export default function MealDeliveryPage() {
 
       try {
         await createOrder(newOrder);
+        // Reset cart after order
+        setSelectedDays([]);
       } catch (error) {
         console.error("Error guardando el pedido:", error)
       }
     }
     setIsCheckoutOpen(false)
-    setSelectedDays([])
   }, [selectedDays, user]);
 
   const handleSectionChange = useCallback((section: string) => {
@@ -162,12 +163,14 @@ export default function MealDeliveryPage() {
   const handleAdminLogin = useCallback(async (email: string, pass: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
+      setIsAdminLoginOpen(false);
     } catch (error) {
       console.error("Error al iniciar sesión como admin:", error);
+      alert("Error al iniciar sesión como admin. Revisa las credenciales.");
     }
   }, []);
 
-  const handleUpdateOrderStatus = useCallback(async (orderId: string, newStatus: "pending" | "completed" | "delivered" | "approved" | "rejected") => {
+  const handleUpdateOrderStatus = useCallback(async (orderId: string, newStatus: Order['status']) => {
     try {
       await updateOrderStatus(orderId, newStatus);
     } catch (error) {
@@ -176,15 +179,27 @@ export default function MealDeliveryPage() {
     }
   }, []);
 
+  const handleDeleteOrder = useCallback(async (orderId: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este pedido? Esta acción no se puede deshacer.")) {
+        return;
+    }
+    try {
+        await deleteOrder(orderId);
+    } catch (error) {
+        console.error("Error al eliminar el pedido:", error);
+        alert("No se pudo eliminar el pedido.");
+    }
+}, []);
+
   const renderMainContent = useCallback(() => {
     if (isAdmin) {
       switch (activeSection) {
         case "admin":
-          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} />;
+          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} onDeleteOrder={handleDeleteOrder} />;
         case "mi-cuenta":
             return <MyAccount user={user} />;
         default:
-          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} />;
+          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} onDeleteOrder={handleDeleteOrder} />;
       }
     } else if (user) {
         switch(activeSection) {
@@ -217,7 +232,7 @@ export default function MealDeliveryPage() {
                 )
         }
     }
-  }, [activeSection, user, isAdmin, orders, selectedDays, handleUpdateOrderStatus, handleDaySelection, toggleCart]);
+  }, [activeSection, user, isAdmin, orders, selectedDays, handleUpdateOrderStatus, handleDeleteOrder, handleDaySelection, toggleCart]);
 
   return (
     <div className="flex h-screen bg-background">
@@ -234,7 +249,7 @@ export default function MealDeliveryPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           onMenuToggle={toggleSidebar}
-          onCartToggle={activeSection === "viandas" ? toggleCart : undefined}
+          onCartToggle={activeSection === "viandas" && !isAdmin ? toggleCart : undefined}
           selectedDaysCount={selectedDays.length}
           user={user}
           onSignOut={handleSignOut}

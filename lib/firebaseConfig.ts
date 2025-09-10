@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 // Lee las variables de entorno de Next.js (NEXT_PUBLIC_)
 const firebaseConfig = {
@@ -27,5 +27,11 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
+// Configurar la persistencia de la sesión
+setPersistence(auth, browserLocalPersistence)
+  .catch((error) => {
+    console.error("Error al configurar la persistencia de Firebase:", error);
+  });
 
 export { db, auth, googleProvider };
