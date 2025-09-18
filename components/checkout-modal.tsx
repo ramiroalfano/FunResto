@@ -6,6 +6,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { User as FirebaseUser } from "firebase/auth"
+import { app } from "@/lib/firebaseConfig"; // Importar app
 
 interface CheckoutModalProps {
   isOpen: boolean
@@ -78,7 +79,7 @@ export function CheckoutModal({
 
     if (paymentMethod === "transfer" && transferImage) {
       try {
-        const storage = getStorage()
+        const storage = getStorage(app)
         const storageRef = ref(
           storage,
           `transfers/${user?.uid}_${Date.now()}_${transferImage.name}`
@@ -94,7 +95,7 @@ export function CheckoutModal({
         return
       }
     } else if (paymentMethod === "mercadopago") {
-      const preferenceData = {
+        const preferenceData = {
         items: [
           {
             title: `Viandas para ${childName}`,

@@ -34,4 +34,4 @@ setPersistence(auth, browserLocalPersistence)
     console.error("Error al configurar la persistencia de Firebase:", error);
   });
 
-export { db, auth, googleProvider };
+export { app, db, auth, googleProvider };
