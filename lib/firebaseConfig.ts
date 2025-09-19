@@ -11,7 +11,7 @@ const firebaseConfig = {
   projectId:
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "funfood-371b5",
   storageBucket:
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "funfood-371b5.appspot.com",
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "funfood-371b5.firebasestorage.app",
   messagingSenderId:
     process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "901586123943",
   appId:
