@@ -1,22 +1,9 @@
+
 [
   {
-    "origin": [
-      "https://funresto.netlify.app",
-      "http://localhost:3000"
-    ],
-    "method": [
-      "GET",
-      "HEAD",
-      "PUT",
-      "POST",
-      "DELETE"
-    ],
-    "responseHeader": [
-      "Content-Type",
-      "Content-Length",
-      "Authorization",
-      "X-Goog-Resumable"
-    ],
+    "origin": ["*"],
+    "method": ["GET", "HEAD", "POST", "PUT", "DELETE"],
+    "responseHeader": ["*"],
     "maxAgeSeconds": 3600
   }
 ]
