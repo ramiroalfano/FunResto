@@ -1,17 +1,15 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { CreditCard, Calendar, X, Banknote } from "lucide-react"
+import { Calendar, X, Banknote } from "lucide-react"
 
 export function Cart({
   selectedDays = [],
-  onCheckout,
   onCashPayment,
   onTransferPayment,
   onClose,
 }: {
   selectedDays?: string[]
-  onCheckout?: () => void
   onCashPayment?: () => void
   onTransferPayment?: () => void
   onClose?: () => void
@@ -90,23 +88,7 @@ export function Cart({
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <CreditCard className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Pago Seguro</span>
-              </div>
-              <p className="text-xs text-blue-600">Procesado por Mercado Pago - Tarjetas de crédito y débito</p>
-            </div>
-
             <div className="space-y-3">
-              <Button
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 font-semibold"
-                onClick={onCheckout}
-              >
-                <CreditCard className="h-5 w-5 mr-2" />
-                Pagar con Mercado Pago
-              </Button>
-
               <Button
                 variant="outline"
                 className="w-full border-green-600 text-green-600 hover:bg-green-50 h-12 font-semibold bg-transparent"
