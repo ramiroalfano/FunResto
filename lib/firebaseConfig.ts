@@ -4,23 +4,20 @@ import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } 
 
 // Lee las variables de entorno de Next.js (NEXT_PUBLIC_)
 const firebaseConfig = {
-  apiKey:
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyD18P_ysxh44PZPT10xkfR0Ifq2BSMQh-Q",
-  authDomain:
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "funfood-371b5.firebaseapp.com",
-  projectId:
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "funfood-371b5",
-  storageBucket:
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "funfood-371b5.firebasestorage.app",
-  messagingSenderId:
-    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "901586123943",
-  appId:
-    process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:901586123943:web:b10e1ae4b3b23527ed6f82",
-  measurementId:
-    process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-0S7HV74RFB",
-  databaseURL:
-    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://funfood-371b5-default-rtdb.firebaseio.com",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
+
+// Verifica que todas las variables de entorno necesarias estén presentes
+if (Object.values(firebaseConfig).some(value => !value)) {
+  console.error("Faltan variables de entorno de Firebase. Asegúrate de que tu archivo .env.local esté configurado correctamente.");
+}
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
