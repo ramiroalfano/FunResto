@@ -71,12 +71,12 @@ export function WeeklyPlanner({ selectedDays = [], onDaySelection, onOpenCart }:
   return (
     <Card className="mb-6 bg-card border-border">
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2 text-card-foreground">
             <Calendar className="h-5 w-5" />
             Planifica tus Viandas
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <Button
               variant="outline"
               size="sm"

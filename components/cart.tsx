@@ -1,14 +1,7 @@
-'use client'
+"use client"
 
 import { Button } from "@/components/ui/button"
 import { CreditCard, Calendar, X, Banknote } from "lucide-react"
-
-const cartItems = [
-  { title: "Original Chess Meat Burger With Chips (Non Veg)", price: 23.99, quantity: 1 },
-  { title: "Fresh Orange Juice With Basil Seed No Sugar (Veg)", price: 12.99, quantity: 1 },
-  { title: "Meat Sushi Maki With Tuna, Ship And Other (Non Veg)", price: 9.99, quantity: 1 },
-  { title: "Tacos Salsa With Chickens Grilled", price: 14.99, quantity: 1 },
-]
 
 export function Cart({
   selectedDays = [],
@@ -38,7 +31,7 @@ export function Cart({
   const total = selectedDays.length * pricePerDay
 
   return (
-    <div className="w-full max-w-full sm:max-w-[420px] h-screen bg-white border-l flex flex-col shadow-lg overflow-hidden overflow-x-hidden min-w-0">
+    <div className="w-full max-w-full sm:max-w-[420px] h-full bg-white border-l flex flex-col shadow-lg overflow-hidden">
       <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
         <div>
           <h2 className="text-xl font-bold">Tu Orden</h2>
@@ -65,9 +58,9 @@ export function Cart({
 
       {selectedDays.length > 0 && (
         <>
-          <div className="flex-1 overflow-y-auto p-4 overflow-x-hidden">
+          <div className="flex-1 overflow-y-auto p-4">
             {selectedDays.map((day, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 border rounded-lg mb-3 bg-gray-50 min-w-0">
+              <div key={index} className="flex items-start gap-3 p-4 border rounded-lg mb-3 bg-gray-50">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Calendar className="h-6 w-6 text-orange-600" />
                 </div>
