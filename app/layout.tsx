@@ -18,13 +18,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
+        <style dangerouslySetInnerHTML={{__html: `html {\n  font-family: ${GeistSans.style.fontFamily};\n  --font-sans: ${GeistSans.variable};\n  --font-mono: ${GeistMono.variable};\n}`}} />
       </head>
       <body>{children}</body>
     </html>

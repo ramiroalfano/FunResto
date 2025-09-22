@@ -263,7 +263,6 @@ export default function MealDeliveryPage() {
             >
                 <Cart
                 selectedDays={selectedDays}
-                onCheckout={handleCheckout}
                 onCashPayment={handleCashPayment}
                 onTransferPayment={handleTransferPayment}
                 onClose={closeCart}

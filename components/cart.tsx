@@ -89,6 +89,7 @@ export function Cart({
             </div>
 
             <div className="space-y-3">
+              {/* MercadoPago removed: only cash and transfer payment options remain */}
               <Button
                 variant="outline"
                 className="w-full border-green-600 text-green-600 hover:bg-green-50 h-12 font-semibold bg-transparent"
