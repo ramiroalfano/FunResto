@@ -1,7 +1,27 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
-admin.initializeApp();
+// If SERVICE_ACCOUNT_KEY is provided as env var (JSON or base64), initialize with it.
+if (process.env.SERVICE_ACCOUNT_KEY) {
+  let serviceAccount;
+  try {
+    const val = process.env.SERVICE_ACCOUNT_KEY;
+    serviceAccount = val.trim().startsWith('{') ? JSON.parse(val) : JSON.parse(Buffer.from(val, 'base64').toString('utf8'));
+  } catch (err) {
+    console.error('Failed parsing SERVICE_ACCOUNT_KEY env var:', err);
+    serviceAccount = null;
+  }
+
+  if (serviceAccount) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  } else {
+    admin.initializeApp();
+  }
+} else {
+  admin.initializeApp();
+}
 
 exports.addAdminRole = functions.database.ref("/admins/{email}").onCreate((snapshot, context) => {
   const email = context.params.email.replace(",", ".");
