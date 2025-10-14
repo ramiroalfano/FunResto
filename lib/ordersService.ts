@@ -30,6 +30,11 @@ export const updateOrderStatus = (orderId: string, newStatus: Order['status']) =
   return set(orderStatusRef, newStatus);
 };
 
+export const updateOrderPaymentStatus = (orderId: string, newPaymentStatus: Order['paymentStatus']) => {
+  const paymentStatusRef = ref(db, `orders/${orderId}/paymentStatus`);
+  return set(paymentStatusRef, newPaymentStatus);
+};
+
 export const deleteOrder = (orderId: string) => {
   const orderRef = ref(db, `orders/${orderId}`);
   return remove(orderRef);

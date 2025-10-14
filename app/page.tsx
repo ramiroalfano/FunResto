@@ -14,7 +14,7 @@ import { AdminLoginModal } from "@/components/admin-login-modal"
 import { WhatsAppFloat } from "@/components/whatsapp-float"
 import { ContactForm } from "@/components/contact-form"
 import { auth } from "@/lib/firebaseConfig"
-import { createOrder, Order, listenOrders, isCurrentUserAdmin, listenUserOrders, updateOrderStatus, deleteOrder } from "@/lib/ordersService"
+import { createOrder, Order, listenOrders, isCurrentUserAdmin, listenUserOrders, updateOrderStatus, updateOrderPaymentStatus, deleteOrder } from "@/lib/ordersService"
 import { onAuthStateChanged, User, signOut, signInWithEmailAndPassword } from "firebase/auth"
 
 const getPricePerDay = (totalDays: number) => {
@@ -179,6 +179,15 @@ export default function MealDeliveryPage() {
     }
   }, []);
 
+  const handleUpdatePaymentStatus = useCallback(async (orderId: string, newPaymentStatus: Order['paymentStatus']) => {
+    try {
+      await updateOrderPaymentStatus(orderId, newPaymentStatus);
+    } catch (error) {
+      console.error("Error al actualizar el estado de pago del pedido:", error);
+      alert("No se pudo actualizar el estado de pago del pedido.");
+    }
+  }, []);
+
   const handleDeleteOrder = useCallback(async (orderId: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar este pedido? Esta acción no se puede deshacer.")) {
         return;
@@ -195,11 +204,11 @@ export default function MealDeliveryPage() {
     if (isAdmin) {
       switch (activeSection) {
         case "admin":
-          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} onDeleteOrder={handleDeleteOrder} />;
+          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} onUpdatePaymentStatus={handleUpdatePaymentStatus} onDeleteOrder={handleDeleteOrder} />;
         case "mi-cuenta":
             return <MyAccount user={user} />;
         default:
-          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} onDeleteOrder={handleDeleteOrder} />;
+          return <AdminOrders orders={orders} onUpdateOrderStatus={handleUpdateOrderStatus} onUpdatePaymentStatus={handleUpdatePaymentStatus} onDeleteOrder={handleDeleteOrder} />;
       }
     } else if (user) {
         switch(activeSection) {

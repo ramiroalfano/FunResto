@@ -36,10 +36,11 @@ import { Order } from "@/lib/ordersService"
 interface AdminOrdersProps {
   orders: Order[]
   onUpdateOrderStatus: (orderId: string, newStatus: Order['status']) => void
+  onUpdatePaymentStatus: (orderId: string, newPaymentStatus: Order['paymentStatus']) => void
   onDeleteOrder: (orderId: string) => void
 }
 
-export function AdminOrders({ orders, onUpdateOrderStatus, onDeleteOrder }: AdminOrdersProps) {
+export function AdminOrders({ orders, onUpdateOrderStatus, onUpdatePaymentStatus, onDeleteOrder }: AdminOrdersProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
@@ -208,6 +209,21 @@ export function AdminOrders({ orders, onUpdateOrderStatus, onDeleteOrder }: Admi
                       <DropdownMenuItem onClick={() => onUpdateOrderStatus(order.id, "rejected")}><XCircle className="mr-2 h-4 w-4" /> Rechazar</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onUpdateOrderStatus(order.id, "not_delivered")}><XCircle className="mr-2 h-4 w-4" /> Marcar como No Entregado</DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() =>
+                          onUpdatePaymentStatus(
+                            order.id,
+                            order.paymentStatus === "pagado" ? "pendiente" : "pagado"
+                          )
+                        }
+                      >
+                        {order.paymentStatus === "pagado" ? (
+                          <Banknote className="mr-2 h-4 w-4" />
+                        ) : (
+                          <CreditCard className="mr-2 h-4 w-4" />
+                        )}
+                        {order.paymentStatus === "pagado" ? "Marcar como Pago Pendiente" : "Marcar como Pagado"}
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => onDeleteOrder(order.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> Eliminar Pedido
                       </DropdownMenuItem>
