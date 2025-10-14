@@ -35,8 +35,7 @@ export function ContactForm() {
         Si tienes alguna duda o sugerencia, no dudes en escribirnos.
       </p>
       <div className="mb-4">
-        <p><strong>Teléfono:</strong> +54 9 11 1234-5678</p>
-        <p><strong>Email:</strong> info@funfood.com</p>
+        <p><strong>Teléfono:</strong> +54 9 2615922642</p>
         <p><strong>Dirección:</strong> Mendoza, ARGENTINA</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">

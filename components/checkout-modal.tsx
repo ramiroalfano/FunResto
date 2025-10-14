@@ -163,7 +163,7 @@ export function CheckoutModal({
       <div className="relative">
         <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Curso"
+          placeholder="Curso y comentario de la comida"
           value={course}
           onChange={(e) => setCourse(e.target.value)}
           className="pl-10"
@@ -197,9 +197,8 @@ export function CheckoutModal({
         <div className="space-y-2">
           <p className="text-sm font-medium">Datos para la Transferencia:</p>
           <div className="bg-gray-100 p-3 rounded-md text-xs">
-            <p>CBU: 0123456789012345678901</p>
-            <p>Alias: viandas.express.mp</p>
-            <p>Titular: Viandas Express S.A.</p>
+            <p>Alias: v.fun.food</p>
+            <p>Titular: Juan Marcelo Lucena</p>
           </div>
           <p className="text-sm font-medium mt-2">Subir Comprobante:</p>
           <div className="relative border-2 border-dashed rounded-lg p-4 text-center">

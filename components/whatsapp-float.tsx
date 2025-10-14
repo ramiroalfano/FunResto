@@ -9,7 +9,7 @@ interface WhatsAppFloatProps {
 }
 
 export function WhatsAppFloat({
-  phoneNumber = "5491123456789",
+  phoneNumber = "5492615922642",
   message = "Hola! Me gustaría consultar sobre las viandas escolares.",
 }: WhatsAppFloatProps) {
   const handleWhatsAppClick = () => {
